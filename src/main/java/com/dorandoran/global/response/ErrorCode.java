@@ -18,22 +18,16 @@ public enum ErrorCode {
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
 
+    //오류 종류 : 회원 관련
     NEED_LOGIN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 부족합니다."),
+    LOGIN_FAIL(HttpStatus.BAD_REQUEST, "잘못된 아이디 혹은 패스워드 입니다."),
+    LOGIN_RESIGN_USER(HttpStatus.BAD_REQUEST, "탈퇴된 회원 입니다."),
 
     //오류 종류 : jwt
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
-    TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
-    TOKEN_LOGGED_OUT(HttpStatus.UNAUTHORIZED, "로그아웃된 토큰입니다."),
-    REFRESH_TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "리프레시 토큰을 찾을 수 없습니다."),
-    REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 리프레시 토큰입니다."),
-    TOKEN_INFO_NOT_FOUND(HttpStatus.BAD_REQUEST, "토큰 정보가 없습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "${exception error 메세지에 따름}"),
-
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
-    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 회원이 존재하지 않습니다."),
-    LOGIN_FAIL(HttpStatus.BAD_REQUEST, "잘못된 아이디 혹은 패스워드 입니다."),
-    LOGIN_RESIGN_USER(HttpStatus.BAD_REQUEST, "탈퇴된 회원 입니다.");
+    ;
 
     private final HttpStatus httpStatus;
     private final String message;

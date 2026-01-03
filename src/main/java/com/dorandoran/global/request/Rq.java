@@ -12,7 +12,7 @@ import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.Optional;
 
-import static com.dorandoran.global.response.ErrorCode.UNAUTHORIZED;
+import static com.dorandoran.global.response.ErrorCode.NEED_LOGIN;
 
 @Component
 @RequestScope
@@ -28,7 +28,7 @@ public class Rq {
                     .filter(principal -> principal instanceof SecurityUser)
                     .map(principal -> (SecurityUser) principal)
                     .flatMap(securityUser -> memberRepository.findByEmail(securityUser.getEmail()))
-                    .orElseThrow(UNAUTHORIZED::throwCustomException);
+                    .orElseThrow(NEED_LOGIN::throwCustomException);
         }
 
         return actor;
