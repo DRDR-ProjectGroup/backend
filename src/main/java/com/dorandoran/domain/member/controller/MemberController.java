@@ -1,0 +1,91 @@
+package com.dorandoran.domain.member.controller;
+
+import com.dorandoran.domain.member.dto.request.LoginRequest;
+import com.dorandoran.domain.member.dto.request.SignupRequest;
+import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
+import com.dorandoran.domain.member.service.MemberService;
+import com.dorandoran.global.jwt.JwtProperties;
+import com.dorandoran.global.response.BaseResponse;
+import com.dorandoran.global.response.SuccessCode;
+import com.dorandoran.standard.util.ControllerUt;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+
+import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_HEADER;
+import static com.dorandoran.global.jwt.JWTConstant.REFRESH_TOKEN_HEADER;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/members")
+@Tag(name = "MemberController", description = "회원 관련 API")
+public class MemberController {
+
+    private final MemberService memberService;
+    private final JwtProperties jwtProperties;
+
+    @PostMapping("/signup")
+    @Operation(summary = "일반 회원 가입")
+    public BaseResponse<Void> signup(
+            @Valid @RequestBody SignupRequest signupDto
+    ) {
+        memberService.signup(signupDto);
+        return BaseResponse.ok(SuccessCode.SIGNUP_SUCCESS);
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "로그인")
+    public BaseResponse<Void> login(@Valid @RequestBody LoginRequest dto, HttpServletResponse response) {
+        MemberTokenResponse token = memberService.login(dto);
+        addJwtTokenResponse(response, token);
+        return BaseResponse.ok(SuccessCode.LOGIN_SUCCESS);
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃")
+    @SecurityRequirement(name = "bearerAuth")   // Swagger 에서 Bearer 인증 필요함을 명시
+    public BaseResponse<Void> logout(
+            HttpServletResponse response,
+            Principal principal) {
+        // memberService.logout 에서 Redis 에서 refresh token 삭제
+        memberService.logout(principal.getName());
+
+        // 클라이언트 쿠키에서 refresh token 삭제
+        deleteRefreshTokenCookie(response);
+        return BaseResponse.ok(SuccessCode.LOGOUT_SUCCESS);
+    }
+
+    @PatchMapping("/resign")
+    @Operation(summary = "회원 탈퇴")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> resign(Principal principal) {
+        memberService.resign(principal.getName());
+        return BaseResponse.ok(SuccessCode.RESIGN_SUCCESS);
+    }
+
+    private void addJwtTokenResponse(HttpServletResponse response, MemberTokenResponse token) {
+        ControllerUt.addHeaderResponse(
+                ACCESS_TOKEN_HEADER,
+                ControllerUt.makeBearerToken(token.getAccessToken()),
+                response);
+        ControllerUt.addCookie(
+                REFRESH_TOKEN_HEADER,
+                token.getRefreshToken(),
+                ControllerUt.parseMsToSec(jwtProperties.getRefreshExpiration()),
+                response);
+    }
+
+    private void deleteRefreshTokenCookie(HttpServletResponse response) {
+        ControllerUt.addCookie(
+                REFRESH_TOKEN_HEADER,
+                null,
+                0,
+                response);
+    }
+}

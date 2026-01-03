@@ -1,0 +1,66 @@
+# 테스트 환경 설정
+spring:
+  # H2 인메모리 DB 사용 (테스트용)
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  
+  # H2 콘솔 (필요 시)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # Redis 테스트용 (Embedded Redis 또는 TestContainers 사용)
+  data:
+    redis:
+      host: localhost
+      port: 6370  # 테스트용 포트 (개발 Redis와 충돌 방지)
+      password: test1234
+  
+  # JPA 테스트 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 테스트 시작/종료 시 자동 생성/삭제
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+  
+  # 테스트 시 devtools 비활성화
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+# 테스트 로깅 (필요한 것만)
+logging:
+  level:
+    com.dorandoran: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.test: INFO
+
+# 테스트용 서버 (랜덤 포트)
+server:
+  port: 0  # 랜덤 포트 사용 (포트 충돌 방지)
+
+# 테스트용 JWT (짧은 만료시간)
+jwt:
+  secret: test-secret-key-for-testing-purposes-only-do-not-use-in-production-environment
+  token:
+    access-expiration: 300  # 5분
+    refresh-expiration: 600  # 10분
+
+# 테스트용 커스텀 설정
+custom:
+  site:
+    frontUrl: "http://localhost:3000"
+    backUrl: "http://localhost:8080"
+  cors:
+    allowed-origins:
+      - http://localhost:3000

@@ -1,0 +1,43 @@
+# 프로덕션 환경 설정
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 프로덕션에서는 스키마 검증만
+    properties:
+      hibernate:
+        highlight_sql: false
+        use_sql_comments: false
+        show_sql: false  # 프로덕션에서는 SQL 출력 안함
+
+  devtools:
+    livereload:
+      enabled: false
+    restart:
+      enabled: false
+
+  web:
+    error:
+      include-stacktrace: never
+      include-message: never
+
+# 프로덕션 환경 로깅 (필수만)
+logging:
+  level:
+    com.dorandoran: INFO
+    org.springframework.web.socket: WARN
+    org.hibernate.SQL: WARN
+
+# 프로덕션 환경 서버 설정
+server:
+  tomcat:
+    max-swallow-size: 100MB
+    max-http-form-post-size: 100MB
+
+# 프로덕션 환경 커스텀 설정 (실제 도메인으로 변경 필요)
+custom:
+  site:
+    frontUrl: ""
+    backUrl: ""
+  cors:
+    allowed-origins:
+      -

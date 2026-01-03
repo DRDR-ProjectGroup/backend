@@ -1,0 +1,63 @@
+# 개발 환경 전용 설정
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발환경에서는 자동 스키마 업데이트
+    properties:
+      hibernate:
+        highlight_sql: true
+        use_sql_comments: true
+        show_sql: true  # 개발환경에서만 SQL 출력
+
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
+  web:
+    error:
+      include-stacktrace: always
+      include-message: always
+  
+  # 이메일 설정 (Gmail 기준)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}  # .env에 추가 필요
+    password: ${MAIL_PASSWORD:your-app-password}      # Gmail 앱 비밀번호
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# 개발 환경 로깅 (상세)
+logging:
+  level:
+    com.dorandoran: DEBUG
+    org.springframework.web.socket: DEBUG
+    org.springframework.mail: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+
+# 개발 환경 서버 설정
+server:
+  tomcat:
+    max-swallow-size: 1GB
+    max-http-form-post-size: 1GB
+
+# 개발 환경 커스텀 설정
+custom:
+  site:
+    frontUrl: "http://localhost:3000"
+    backUrl: "http://localhost:8080"
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:8080

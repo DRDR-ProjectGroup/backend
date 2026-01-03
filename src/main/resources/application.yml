@@ -1,0 +1,67 @@
+# 공통 설정 (모든 환경에서 사용)
+spring:
+  application:
+    name: DoranDoran
+  profiles:
+    active: dev
+  config:
+    import: optional:file:.env[.properties]
+  
+  # 공통 파일 업로드 설정
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  
+  # 공통 웹 설정
+  web:
+    resources:
+      add-mappings: false
+  
+  output:
+    ansi:
+      enabled: always
+  
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+  
+  # 공통 DB 설정
+  datasource:
+    url: ${DRDR_DB_URL}
+    username: ${DRDR_DB_USERNAME}
+    password: ${DRDR_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 공통 JPA 설정
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# 공통 서버 설정
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# 공통 JWT 설정
+custom:
+  jwt:
+    secret: ${JWT_SECRET}
+    token:
+      access-expiration: ${JWT_ACCESS_EXPIRATION}
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION}
+
+# Swagger 설정
+springdoc:
+  default-produces-media-type: application/json;charset=UTF-8
+
+# 공통 Redis 설정
+redis:
+  host: ${DRDR_REDIS_DB_HOST}
+  port: ${DRDR_REDIS_DB_PORT}
+  password: ${DRDR_REDIS_DB_PASSWORD}
+  timeout: 3000ms

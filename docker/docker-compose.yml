@@ -1,0 +1,50 @@
+name: dorandoran
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: doranDB
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      TZ: ${MYSQL_TIME_ZONE}
+    ports:
+      - "${MYSQL_OUT_PORT}:${MYSQL_OUT_PORT}"
+    networks:
+      - drdr-network
+    volumes:
+      - doran-rdb-data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: bitnami/redis:latest
+    container_name: doranRedis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_OUT_PORT}:${REDIS_OUT_PORT}"
+    networks:
+      - drdr-network
+    volumes:
+      - doran-redis-data:/bitnami/redis/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  drdr-network:
+    driver: bridge
+
+volumes:
+  doran-rdb-data:
+    driver: local
+  doran-redis-data:
+    driver: local
