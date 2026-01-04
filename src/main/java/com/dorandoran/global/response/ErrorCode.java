@@ -16,7 +16,7 @@ public enum ErrorCode {
     INVALID_REQUEST_DATA(HttpStatus.BAD_REQUEST, "데이터 저장 실패, 재시도 혹은 관리자에게 문의해주세요."),
     FAIL(HttpStatus.BAD_REQUEST, "요청 응답 실패, 관리자에게 문의해주세요."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인가가 필요합니다."),
 
     //오류 종류 : 회원 관련
     NEED_LOGIN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),

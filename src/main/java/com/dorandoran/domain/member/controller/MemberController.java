@@ -1,7 +1,7 @@
 package com.dorandoran.domain.member.controller;
 
+import com.dorandoran.domain.member.dto.request.JoinRequest;
 import com.dorandoran.domain.member.dto.request.LoginRequest;
-import com.dorandoran.domain.member.dto.request.SignupRequest;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.global.jwt.JwtProperties;
@@ -30,13 +30,13 @@ public class MemberController {
     private final MemberService memberService;
     private final JwtProperties jwtProperties;
 
-    @PostMapping("/signup")
+    @PostMapping("/join")
     @Operation(summary = "일반 회원 가입")
-    public BaseResponse<Void> signup(
-            @Valid @RequestBody SignupRequest signupDto
+    public BaseResponse<Void> join(
+            @Valid @RequestBody JoinRequest signupDto
     ) {
-        memberService.signup(signupDto);
-        return BaseResponse.ok(SuccessCode.SIGNUP_SUCCESS);
+        memberService.join(signupDto);
+        return BaseResponse.ok(SuccessCode.JOIN_SUCCESS);
     }
 
     @PostMapping("/login")
