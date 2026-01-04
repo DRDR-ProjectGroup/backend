@@ -62,6 +62,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getRequestURI().equals("/api/v1/auth/reissue");
+    }
+
     private void validateAccessToken(String accessToken) throws JwtException {
         // 1. expired 확인
         jwtUtil.isExpired(accessToken);

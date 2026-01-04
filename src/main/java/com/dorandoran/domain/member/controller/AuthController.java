@@ -33,7 +33,7 @@ import static com.dorandoran.global.response.SuccessCode.TOKEN_REISSUE_SUCCESS;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-@Tag(name = "Authentication Controller", description = "회원 인증 컨트롤러")
+@Tag(name = "AuthenticationController", description = "회원 인증 API")
 @Slf4j
 public class AuthController {
 
@@ -47,7 +47,9 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<AuthMemberResponse> getMyInfo(HttpServletRequest request, Principal principal) {
         Long userId = Long.parseLong(principal.getName());
-        Member findMember = memberRepository.findById(userId).orElse(null);
+        Member findMember = memberRepository.findById(userId).orElseThrow(
+                () -> new JwtException("존재하지 않는 회원입니다.")
+        );
         String accesstoken = FilterUtil.extractAccessToken(request);
         String refreshtoken = FilterUtil.extractRefreshToken(request);
         return BaseResponse.ok(SuccessCode.SUCCESS, AuthMemberResponse.of(findMember, accesstoken, refreshtoken));
@@ -67,29 +69,37 @@ public class AuthController {
             return BaseResponse.fail(INVALID_TOKEN);
         }
 
-        // 3. RefreshToken으로부터 MemberId, role 추출
-        String userId = jwtUtil.getUserId(refreshToken);
-        String role = jwtUtil.getRole(refreshToken);
+        String userId;
+        String role;
 
-        // 4. Redis에서 저장된 RefreshToken 조회, 없으면 재발급 불가 (로그아웃 처리)
-        String savedRefreshToken = redisRepository.getRefreshToken(userId);
-        if (savedRefreshToken == null) {
-            log.error("Redis 에 저장된 refresh Token 이 존재하지 않음.");
+        try {
+            // 3. RefreshToken으로부터 MemberId, role 추출
+            userId = jwtUtil.getUserId(refreshToken);
+            role = jwtUtil.getRole(refreshToken);
+
+            // 4. Redis에서 저장된 RefreshToken 조회, 없으면 재발급 불가 (로그아웃 처리)
+            String savedRefreshToken = redisRepository.getRefreshToken(userId);
+            if (savedRefreshToken == null) {
+                log.error("Redis 에 저장된 refresh Token 이 존재하지 않음.");
+                return BaseResponse.fail(INVALID_TOKEN);
+            }
+
+            // 5. RefreshToken 일치 여부 검증, 예외 시 재발급 불가 (로그아웃 처리)
+            validateRefreshToken(refreshToken, savedRefreshToken);
+
+        } catch (JwtException e) {
+            log.warn("Invalid refresh token: {}", e.getMessage());
             return BaseResponse.fail(INVALID_TOKEN);
         }
 
-        // 4. RefreshToken 일치 여부 검증, 예외 시 재발급 불가 (로그아웃 처리)
-        validateRefreshToken(refreshToken, savedRefreshToken);
-
-        // 5. 새로운 AccessToken, RefreshToken 생성
+        // 6. 새로운 AccessToken, RefreshToken 생성
         String newAccessToken = jwtUtil.createJwt(ACCESS_TOKEN_CATEGORY, userId, role, jwtProperties.getAccessExpiration());
         String newRefreshToken = jwtUtil.createJwt(REFRESH_TOKEN_CATEGORY, userId, role, jwtProperties.getRefreshExpiration());
 
-        // 6. Redis에 새로운 RefreshToken 저장
-        redisRepository.deleteRefreshToken(userId);
+        // 7. Redis에 새로운 RefreshToken 저장
         redisRepository.saveRefreshToken(userId, newRefreshToken, jwtProperties.getRefreshExpiration());
 
-        // 7. Response Header와 Cookie에 새로운 토큰들 세팅
+        // 8. Response Header와 Cookie에 새로운 토큰들 세팅
         ControllerUt.addHeaderResponse(
                 ACCESS_TOKEN_HEADER,
                 ControllerUt.makeBearerToken(newAccessToken),
