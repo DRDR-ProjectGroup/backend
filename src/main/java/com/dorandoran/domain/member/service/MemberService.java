@@ -1,7 +1,7 @@
 package com.dorandoran.domain.member.service;
 
+import com.dorandoran.domain.member.dto.request.JoinRequest;
 import com.dorandoran.domain.member.dto.request.LoginRequest;
-import com.dorandoran.domain.member.dto.request.SignupRequest;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.global.jwt.JWTUtil;
@@ -31,7 +31,7 @@ public class MemberService {
     private final Rq rq;
 
     @Transactional
-    public void signup(SignupRequest signupDto) {
+    public void join(JoinRequest signupDto) {
         // TODO: 회원 가입 로직 구현
     }
 

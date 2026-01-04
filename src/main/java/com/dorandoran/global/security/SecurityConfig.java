@@ -5,7 +5,6 @@ import com.dorandoran.global.security.cors.CorsProperties;
 import com.dorandoran.global.security.entrypoint.CustomAccessDeniedEntryPoint;
 import com.dorandoran.global.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.dorandoran.global.security.filter.AuthenticationFilter;
-import com.dorandoran.global.security.filter.ReissueFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +35,6 @@ import static org.springframework.http.HttpMethod.GET;
 public class SecurityConfig {
     private final CorsProperties corsProperties;
     private final AuthenticationFilter authenticationFilter;
-    private final ReissueFilter reissueFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedEntryPoint customAccessDeniedEntryPoint;
 
@@ -111,6 +109,9 @@ public class SecurityConfig {
                         // 관리자 전용
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
+                        // auth
+                        .requestMatchers("/api/v1/auth/me").authenticated()
+
                         // 나머지는 허용
                         .anyRequest().permitAll()
                 )
@@ -118,7 +119,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedEntryPoint))
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(reissueFilter, AuthenticationFilter.class);
+        ;
 
         return http.build();
     }
