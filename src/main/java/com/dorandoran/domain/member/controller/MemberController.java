@@ -1,5 +1,7 @@
 package com.dorandoran.domain.member.controller;
 
+import com.dorandoran.domain.member.dto.request.EmailRequest;
+import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
 import com.dorandoran.domain.member.dto.request.JoinRequest;
 import com.dorandoran.domain.member.dto.request.LoginRequest;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
@@ -33,10 +35,27 @@ public class MemberController {
     @PostMapping("/join")
     @Operation(summary = "일반 회원 가입")
     public BaseResponse<Void> join(
-            @Valid @RequestBody JoinRequest signupDto
+            @Valid @RequestBody JoinRequest joinDto
     ) {
-        memberService.join(signupDto);
+        memberService.join(joinDto);
         return BaseResponse.ok(SuccessCode.JOIN_SUCCESS);
+    }
+
+    @PostMapping("/sendEmail")
+    @Operation(summary = "이메일 인증 코드 전송")
+    public BaseResponse<Void> sendEmail(
+            @Valid @RequestBody EmailRequest emailDto) {
+        memberService.sendCodeToEmail(emailDto);
+        return BaseResponse.ok(SuccessCode.EMAIL_SEND_SUCCESS);
+    }
+
+    @PostMapping("/verifyEmail")
+    @Operation(summary = "이메일 인증 코드 검증")
+    public BaseResponse<Void> verifyEmail(
+            @Valid @RequestBody EmailVerificationRequest dto
+    ) {
+        memberService.verifyEmail(dto);
+        return BaseResponse.ok(SuccessCode.EMAIL_VERIFY_SUCCESS);
     }
 
     @PostMapping("/login")

@@ -39,9 +39,9 @@ public class BaseInitData {
         List<Member> memberList = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             String username = "test" + i;
-            String email = "test" + i + "@example.com";
+            String email = "test" + i + "@email.com";
             String password = passwordEncoder.encode("test1234");
-            String nickname = "테스트" + i;
+            String nickname = "test" + i;
 
             memberList.add(memberRepository.save(Member.createMember(username, password, email, nickname)));
         }

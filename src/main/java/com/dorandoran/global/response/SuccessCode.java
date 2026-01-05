@@ -8,12 +8,18 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum SuccessCode {
 
+    // Member
     LOGIN_SUCCESS(HttpStatus.OK, "로그인 성공"),
     LOGOUT_SUCCESS(HttpStatus.OK, "로그아웃 성공"),
     JOIN_SUCCESS(HttpStatus.CREATED, "회원가입 성공"),
     RESIGN_SUCCESS(HttpStatus.OK, "회원탈퇴 성공"),
 
+    // JWT
     TOKEN_REISSUE_SUCCESS(HttpStatus.OK, "토큰 재발급 성공"),
+
+    // Email
+    EMAIL_SEND_SUCCESS(HttpStatus.OK, "이메일 인증 코드 전송 성공"),
+    EMAIL_VERIFY_SUCCESS(HttpStatus.OK, "이메일 인증 코드 검증 성공"),
 
     // Common
     SUCCESS(HttpStatus.OK, "요청 응답 성공"),

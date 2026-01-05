@@ -44,4 +44,34 @@ public class RedisRepository {
     private void delete(String key) {
         redisTemplate.delete(key);
     }
+
+    public void saveEmailAuthCode(String email, String authCode) {
+        String key = "EMAIL_AUTH:" + email;
+        redisTemplate.opsForValue().set(key, authCode, 5, TimeUnit.MINUTES);
+    }
+
+    public String getAuthCode(String email) {
+        String key = "EMAIL_AUTH:" + email;
+        return (String) redisTemplate.opsForValue().get(key);
+    }
+
+    public void deleteAuthCode(String email) {
+        String key = "EMAIL_AUTH:" + email;
+        redisTemplate.delete(key);
+    }
+
+    public void saveEmailVerified(String email) {
+        String key = "EMAIL_VERIFIED:" + email;
+        redisTemplate.opsForValue().set(key, "VERIFIED", 10, TimeUnit.MINUTES);
+    }
+
+    public boolean isEmailVerified(String email) {
+        String key = "EMAIL_VERIFIED:" + email;
+        return "VERIFIED".equals(redisTemplate.opsForValue().get(key));
+    }
+
+    public void deleteEmailVerified(String email) {
+        String key = "EMAIL_VERIFIED:" + email;
+        redisTemplate.delete(key);
+    }
 }
