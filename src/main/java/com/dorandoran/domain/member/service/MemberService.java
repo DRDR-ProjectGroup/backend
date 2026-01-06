@@ -122,7 +122,7 @@ public class MemberService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        return generateUserTokens(
+        return generateMemberTokens(
                 authentication.getAuthorities().iterator().next().getAuthority(),
                 userDetails.getUsername());
     }
@@ -145,7 +145,7 @@ public class MemberService {
     }
 
     // JWT access token, refresh token 생성
-    private MemberTokenResponse generateUserTokens(String role, String userId) {
+    private MemberTokenResponse generateMemberTokens(String role, String userId) {
         String access = jwtUtil.createJwt(ACCESS_TOKEN_CATEGORY, userId, role,
                 jwtProperties.getAccessExpiration());
         String refresh = jwtUtil.createJwt(REFRESH_TOKEN_CATEGORY, userId, role,

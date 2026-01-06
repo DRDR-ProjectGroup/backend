@@ -40,7 +40,7 @@ dependencies {
 
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    
+
     // email
     implementation("org.springframework.boot:spring-boot-starter-mail")
 
@@ -48,9 +48,13 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
+    // Test in Lombok
+    testImplementation("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
+
     // swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
-    
+
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")

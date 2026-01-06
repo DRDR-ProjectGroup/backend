@@ -20,7 +20,7 @@ public enum ErrorCode {
 
     // JWT 오류
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "${exception error 메세지에 따름}"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
 
     // Email 오류
     EMAIL_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),

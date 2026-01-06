@@ -12,14 +12,7 @@ spring:
     console:
       enabled: true
       path: /h2-console
-  
-  # Redis 테스트용 (Embedded Redis 또는 TestContainers 사용)
-  data:
-    redis:
-      host: localhost
-      port: 6370  # 테스트용 포트 (개발 Redis와 충돌 방지)
-      password: test1234
-  
+
   # JPA 테스트 설정
   jpa:
     hibernate:
@@ -64,3 +57,9 @@ custom:
   cors:
     allowed-origins:
       - http://localhost:3000
+
+redis:
+  host: localhost
+  port: 6370
+  password: test1234
+  timeout: 3000ms
