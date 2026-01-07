@@ -13,6 +13,8 @@ import static com.dorandoran.global.jwt.JWTConstant.REFRESH_TOKEN_HEADER;
 public class RedisRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private static final String EMAIL_AUTH_PREFIX = "EMAIL_AUTH:";
+    private static final String EMAIL_VERIFIED_PREFIX = "EMAIL_VERIFIED:";
 
     public void saveRefreshToken(String userId, String refreshToken, long expiredTime) {
         String key = keyGenerator(userId);
@@ -46,32 +48,32 @@ public class RedisRepository {
     }
 
     public void saveEmailAuthCode(String email, String authCode) {
-        String key = "EMAIL_AUTH:" + email;
+        String key = EMAIL_AUTH_PREFIX + email;
         redisTemplate.opsForValue().set(key, authCode, 5, TimeUnit.MINUTES);
     }
 
     public String getAuthCode(String email) {
-        String key = "EMAIL_AUTH:" + email;
+        String key = EMAIL_AUTH_PREFIX + email;
         return (String) redisTemplate.opsForValue().get(key);
     }
 
     public void deleteAuthCode(String email) {
-        String key = "EMAIL_AUTH:" + email;
+        String key = EMAIL_AUTH_PREFIX + email;
         redisTemplate.delete(key);
     }
 
     public void saveEmailVerified(String email) {
-        String key = "EMAIL_VERIFIED:" + email;
+        String key = EMAIL_VERIFIED_PREFIX + email;
         redisTemplate.opsForValue().set(key, "VERIFIED", 10, TimeUnit.MINUTES);
     }
 
     public boolean isEmailVerified(String email) {
-        String key = "EMAIL_VERIFIED:" + email;
+        String key = EMAIL_VERIFIED_PREFIX + email;
         return "VERIFIED".equals(redisTemplate.opsForValue().get(key));
     }
 
     public void deleteEmailVerified(String email) {
-        String key = "EMAIL_VERIFIED:" + email;
+        String key = EMAIL_VERIFIED_PREFIX + email;
         redisTemplate.delete(key);
     }
 }

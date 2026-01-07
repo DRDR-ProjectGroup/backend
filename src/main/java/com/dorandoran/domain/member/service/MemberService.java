@@ -81,16 +81,18 @@ public class MemberService {
         // 4. 이메일 내용 작성
         String title = "[도란도란] 이메일 인증 코드 안내";
 
-        String content = "<html>"
-                + "<body>"
-                + "<h2>안녕하세요. 도란도란 회원가입을 위한 이메일 인증 코드 안내입니다.</h2>"
-                + "<p>아래 인증 코드를 회원가입 화면에 입력해 주세요.</p>"
-                + "<h3 style='color: blue;'>인증 코드: " + authCode + "</h3>"
-                + "<footer style='margin-top: 20px; font-size: small; color: gray;'>"
-                + "<p>이 메일은 발신 전용입니다. 본 메일에 회신하지 마시기 바랍니다.</p>"
-                + "</footer>"
-                + "</body>"
-                + "</html>";
+        String content = """
+                <html>
+                <body>
+                <h2>안녕하세요. 도란도란 회원가입을 위한 이메일 인증 코드 안내입니다.</h2>
+                <p>아래 인증 코드를 회원가입 화면에 입력해 주세요.</p>
+                <h3 style='color: blue;'>인증 코드: %s</h3>
+                <footer style='margin-top: 20px; font-size: small; color: gray;'>
+                <p>이 메일은 발신 전용입니다. 본 메일에 회신하지 마시기 바랍니다.</p>
+                </footer>
+                </body>
+                </html>
+                """.formatted(authCode);
 
         // 5. 이메일 전송
         try {

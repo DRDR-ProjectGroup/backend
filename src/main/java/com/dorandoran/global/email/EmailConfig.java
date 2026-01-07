@@ -1,6 +1,5 @@
 package com.dorandoran.global.email;
 
-import com.dorandoran.domain.member.service.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,11 +40,6 @@ public class EmailConfig {
 
     @Value("${spring.mail.properties.mail.smtp.writetimeout}")
     private int writeTimeout;
-
-    @Bean
-    public EmailService emailService() {
-        return new EmailService(javaMailSender());
-    }
 
     @Bean
     public JavaMailSender javaMailSender() {
