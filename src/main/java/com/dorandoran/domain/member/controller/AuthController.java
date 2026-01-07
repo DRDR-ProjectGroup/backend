@@ -43,7 +43,7 @@ public class AuthController {
     private final MemberRepository memberRepository;
 
     @GetMapping("/me")
-    @Operation(summary = "내 정보 조회", description = "현재 인증된 사용자의 정보를 조회합니다.")
+    @Operation(summary = "내 정보 조회(개발용)", description = "현재 인증된 사용자의 정보를 조회합니다.")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<AuthMemberResponse> getMyInfo(HttpServletRequest request, Principal principal) {
         Long userId = Long.parseLong(principal.getName());

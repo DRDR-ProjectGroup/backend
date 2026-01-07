@@ -7,6 +7,7 @@ import com.dorandoran.domain.member.dto.request.LoginRequest;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.domain.member.type.MemberStatus;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.jwt.JWTUtil;
 import com.dorandoran.global.jwt.JwtProperties;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_CATEGORY;
@@ -136,7 +138,12 @@ public class MemberService {
 
     @Transactional
     public void resign(String userId) {
-        // TODO: 회원 탈퇴 로직 구현
+        long id = Long.parseLong(userId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        redisRepository.deleteRefreshToken(userId);
+        memberRepository.delete(findMember);
     }
 
     // AuthenticationManager 를 통해 인증 처리
@@ -198,5 +205,13 @@ public class MemberService {
         if (!redisCode.equals(String.valueOf(authCode))) {
             throw new CustomException(ErrorCode.INVALID_AUTH_CODE);
         }
+    }
+
+    // 회원 삭제
+    @Transactional
+    public void deleteExpiredMember() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+
+        memberRepository.deleteAllByStatusDeletedAndBefore(MemberStatus.DELETED, threshold);
     }
 }

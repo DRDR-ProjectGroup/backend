@@ -11,12 +11,18 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+// 모든 조회 시 DELETED 상태의 회원 제외
+@SQLRestriction("status != 'DELETED'")
+// memberRepository.delete() 호출 시 status를 DELETED로 변경, deletedAt 현재 시간으로 설정
+@SQLDelete(sql = "UPDATE member SET status = 'DELETED', deleted_at = NOW() WHERE id = ?")
 public class Member extends BaseTime {
 
     @Column(nullable = false, unique = true)
@@ -50,11 +56,6 @@ public class Member extends BaseTime {
         this.nickname = nickname;
         this.role = role;
         this.status = status;
-    }
-
-    public void withdraw() {
-        this.status = MemberStatus.DELETED;
-        this.deletedAt = LocalDateTime.now();
     }
 
     public static Member createMember(String username, String password, String email, String nickname) {

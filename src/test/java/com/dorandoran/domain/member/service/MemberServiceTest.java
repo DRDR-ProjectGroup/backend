@@ -13,7 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -134,5 +137,53 @@ class MemberServiceTest extends SpringBootTestSupporter {
                 .isInstanceOf(CustomException.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.INVALID_AUTH_CODE);
+    }
+
+    @DisplayName("탈퇴 - 존재하지 않는 회원")
+    @Test
+    void resign_memberNotFound() {
+        // given
+        String userId = "999999999";
+
+        // when / then
+        assertThatThrownBy(() -> memberService.resign(userId))
+                .isInstanceOf(CustomException.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @DisplayName("탈퇴 - 탈퇴 30일 후 삭제")
+    @Test
+    void resign_deleteAfter30Days() {
+        // given
+        // 오래된 deleted 회원을 DB에 직접 추가 (deleted_at = 31일 전)
+        String expiredUsername = "expiredUser";
+        String expiredEmail = "expired@naver.com";
+        String expiredNickname = "expiredNick";
+        String expiredPassword = passwordEncoder.encode("pw1234");
+        String role = "ROLE_MEMBER";
+        String status = "DELETED";
+        LocalDateTime oldDeletedAt = LocalDateTime.now().minusDays(31);
+
+        em.createNativeQuery("INSERT INTO member (username, password, email, nickname, role, status, deleted_at, created_at, modified_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                .setParameter(1, expiredUsername)
+                .setParameter(2, expiredPassword)
+                .setParameter(3, expiredEmail)
+                .setParameter(4, expiredNickname)
+                .setParameter(5, role)
+                .setParameter(6, status)
+                .setParameter(7, Timestamp.valueOf(oldDeletedAt))
+                .setParameter(8, Timestamp.valueOf(LocalDateTime.now().minusDays(40)))
+                .setParameter(9, Timestamp.valueOf(LocalDateTime.now().minusDays(40)))
+                .executeUpdate();
+
+        em.flush();
+        em.clear();
+
+        // when
+        memberService.deleteExpiredMember();
+
+        // then
+        assertThat(memberRepository.findByUsername(expiredUsername)).isEmpty();
     }
 }

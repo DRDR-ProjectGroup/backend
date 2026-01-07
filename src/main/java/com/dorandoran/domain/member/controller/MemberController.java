@@ -44,7 +44,8 @@ public class MemberController {
     @PostMapping("/sendEmail")
     @Operation(summary = "이메일 인증 코드 전송")
     public BaseResponse<Void> sendEmail(
-            @Valid @RequestBody EmailRequest emailDto) {
+            @Valid @RequestBody EmailRequest emailDto
+    ) {
         memberService.sendCodeToEmail(emailDto);
         return BaseResponse.ok(SuccessCode.EMAIL_SEND_SUCCESS);
     }
@@ -60,7 +61,10 @@ public class MemberController {
 
     @PostMapping("/login")
     @Operation(summary = "로그인")
-    public BaseResponse<Void> login(@Valid @RequestBody LoginRequest dto, HttpServletResponse response) {
+    public BaseResponse<Void> login(
+            @Valid @RequestBody LoginRequest dto,
+            HttpServletResponse response
+    ) {
         MemberTokenResponse token = memberService.login(dto);
         addJwtTokenResponse(response, token);
         return BaseResponse.ok(SuccessCode.LOGIN_SUCCESS);
@@ -71,7 +75,8 @@ public class MemberController {
     @SecurityRequirement(name = "bearerAuth")   // Swagger 에서 Bearer 인증 필요함을 명시
     public BaseResponse<Void> logout(
             HttpServletResponse response,
-            Principal principal) {
+            Principal principal
+    ) {
         // memberService.logout 에서 Redis 에서 refresh token 삭제
         memberService.logout(principal.getName());
 
@@ -83,8 +88,12 @@ public class MemberController {
     @PatchMapping("/resign")
     @Operation(summary = "회원 탈퇴")
     @SecurityRequirement(name = "bearerAuth")
-    public BaseResponse<Void> resign(Principal principal) {
+    public BaseResponse<Void> resign(
+            HttpServletResponse response,
+            Principal principal
+    ) {
         memberService.resign(principal.getName());
+        deleteRefreshTokenCookie(response);
         return BaseResponse.ok(SuccessCode.RESIGN_SUCCESS);
     }
 
