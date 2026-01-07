@@ -1,26 +1,35 @@
 package com.dorandoran.domain.member.service;
 
+import com.dorandoran.domain.member.dto.request.EmailRequest;
+import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
 import com.dorandoran.domain.member.dto.request.JoinRequest;
 import com.dorandoran.domain.member.dto.request.LoginRequest;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
+import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.jwt.JWTUtil;
 import com.dorandoran.global.jwt.JwtProperties;
 import com.dorandoran.global.redis.RedisRepository;
-import com.dorandoran.global.request.Rq;
+import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.security.auth.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_CATEGORY;
 import static com.dorandoran.global.jwt.JWTConstant.REFRESH_TOKEN_CATEGORY;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -28,11 +37,85 @@ public class MemberService {
     private final JWTUtil jwtUtil;
     private final JwtProperties jwtProperties;
     private final RedisRepository redisRepository;
-    private final Rq rq;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
-    public void join(JoinRequest signupDto) {
-        // TODO: 회원 가입 로직 구현
+    public void join(JoinRequest joinDto) {
+        // 이메일 인증 여부 확인
+        if (!redisRepository.isEmailVerified(joinDto.getEmail())) {
+            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+        // username, nickname, email 중복 검사
+        validateDuplicateMember(joinDto);
+
+        // 회원 가입 처리
+        Member newMember = Member.createMember(
+                joinDto.getUsername(),
+                passwordEncoder.encode(joinDto.getPassword()),
+                joinDto.getEmail(),
+                joinDto.getNickname()
+        );
+
+        memberRepository.save(newMember);
+
+        redisRepository.deleteEmailVerified(joinDto.getEmail());
+    }
+
+    @Transactional
+    public void sendCodeToEmail(EmailRequest emailDto) {
+        String email = emailDto.getEmail();
+
+        // 1. 이메일 중복 확인
+        if (memberRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
+        }
+
+        // 2. 인증 코드 생성
+        String authCode = String.valueOf(generateAuthCode());
+
+        // 3. Redis에 인증 코드, 만료시간 저장
+        saveAuthCodeRedis(email, authCode);
+
+        // 4. 이메일 내용 작성
+        String title = "[도란도란] 이메일 인증 코드 안내";
+
+        String content = """
+                <html>
+                <body>
+                <h2>안녕하세요. 도란도란 회원가입을 위한 이메일 인증 코드 안내입니다.</h2>
+                <p>아래 인증 코드를 회원가입 화면에 입력해 주세요.</p>
+                <h3 style='color: blue;'>인증 코드: %s</h3>
+                <footer style='margin-top: 20px; font-size: small; color: gray;'>
+                <p>이 메일은 발신 전용입니다. 본 메일에 회신하지 마시기 바랍니다.</p>
+                </footer>
+                </body>
+                </html>
+                """.formatted(authCode);
+
+        // 5. 이메일 전송
+        try {
+            emailService.sendEmail(email, title, content);
+        } catch (Exception e) {
+            log.error("Failed to send email to {}: {}", email, e.getMessage());
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAIL);
+        }
+    }
+
+    @Transactional
+    public void verifyEmail(EmailVerificationRequest dto) {
+        String email = dto.getEmail();
+        int code = dto.getCode();
+
+        // Redis 에서 인증 코드 검증
+        verifyAuthCodeRedis(email, code);
+
+        // 인증 성공 시 Redis 에 이메일 인증 완료 상태 저장
+        redisRepository.saveEmailVerified(email);
+
+        // 인증 성공 시 Redis 에서 인증 코드 삭제
+        redisRepository.deleteAuthCode(email);
     }
 
     @Transactional(readOnly = true)
@@ -41,7 +124,7 @@ public class MemberService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        return generateUserTokens(
+        return generateMemberTokens(
                 authentication.getAuthorities().iterator().next().getAuthority(),
                 userDetails.getUsername());
     }
@@ -56,13 +139,15 @@ public class MemberService {
         // TODO: 회원 탈퇴 로직 구현
     }
 
+    // AuthenticationManager 를 통해 인증 처리
     private Authentication authenticateMember(LoginRequest dto) {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword());
         return authenticationManager.authenticate(authToken);
     }
 
-    private MemberTokenResponse generateUserTokens(String role, String userId) {
+    // JWT access token, refresh token 생성
+    private MemberTokenResponse generateMemberTokens(String role, String userId) {
         String access = jwtUtil.createJwt(ACCESS_TOKEN_CATEGORY, userId, role,
                 jwtProperties.getAccessExpiration());
         String refresh = jwtUtil.createJwt(REFRESH_TOKEN_CATEGORY, userId, role,
@@ -73,7 +158,45 @@ public class MemberService {
         return MemberTokenResponse.of(access, refresh);
     }
 
+    // Redis 에 refresh token 저장
     private void saveRefreshTokenRedis(String userId, String refreshToken, Long expirationMs) {
         redisRepository.saveRefreshToken(userId, refreshToken, expirationMs);
+    }
+
+    // 중복 회원 검증
+    private void validateDuplicateMember(JoinRequest joinDto) {
+        if (memberRepository.existsByUsername(joinDto.getUsername())) {
+            throw new CustomException(ErrorCode.DUPLICATED_USERNAME);
+        }
+        if (memberRepository.existsByNickname(joinDto.getNickname())) {
+            throw new CustomException(ErrorCode.DUPLICATED_NICKNAME);
+        }
+        if (memberRepository.existsByEmail(joinDto.getEmail())) {
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
+        }
+    }
+
+    // 인증 코드 생성
+    private int generateAuthCode() {
+        // 6자리 랜덤 인증 코드 생성
+        return ThreadLocalRandom.current().nextInt(100000, 1000000);
+    }
+
+    // Redis 에 인증 코드 저장
+    private void saveAuthCodeRedis(String email, String authCode) {
+        redisRepository.saveEmailAuthCode(email, authCode);
+    }
+
+    // 인증 코드 검증
+    private void verifyAuthCodeRedis(String email, int authCode) {
+        String redisCode = redisRepository.getAuthCode(email);
+
+        if (redisCode == null) {
+            throw new CustomException(ErrorCode.AUTH_CODE_NOT_FOUND);
+        }
+
+        if (!redisCode.equals(String.valueOf(authCode))) {
+            throw new CustomException(ErrorCode.INVALID_AUTH_CODE);
+        }
     }
 }

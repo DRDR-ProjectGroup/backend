@@ -19,23 +19,6 @@ spring:
     error:
       include-stacktrace: always
       include-message: always
-  
-  # 이메일 설정 (Gmail 기준)
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME:your-email@gmail.com}  # .env에 추가 필요
-    password: ${MAIL_PASSWORD:your-app-password}      # Gmail 앱 비밀번호
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
 
 # 개발 환경 로깅 (상세)
 logging:

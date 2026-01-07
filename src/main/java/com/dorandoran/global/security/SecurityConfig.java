@@ -91,7 +91,9 @@ public class SecurityConfig {
                         // member domain
                         .requestMatchers(
                                 "/api/v1/members/join",
-                                "/api/v1/members/login"
+                                "/api/v1/members/login",
+                                "/api/v1/members/sendEmail",
+                                "/api/v1/members/verifyEmail"
                         ).permitAll()
                         .requestMatchers("/api/v1/members/**").authenticated()
 
