@@ -17,6 +17,7 @@ import static com.dorandoran.global.response.SuccessCode.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -169,5 +170,26 @@ class MemberControllerTest extends SpringBootTestSupporter {
 
         // RedisRepository mock에 대해 deleteRefreshToken이 호출됐는지 검증
         verify(redisRepository).deleteRefreshToken(member.getUsername());
+    }
+
+    @DisplayName("resign 테스트")
+    @Test
+    void resign() throws Exception {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+
+        // when
+        ResultActions result = mockMvc.perform(patch("/api/v1/members/resign")
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+                .contentType("application/json"));
+
+        // then
+        result.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(RESIGN_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(RESIGN_SUCCESS.getHttpStatus().value()));
+
+        // RedisRepository mock에 대해 deleteRefreshToken이 호출됐는지 검증
+        verify(redisRepository).deleteRefreshToken(String.valueOf(member.getId()));
     }
 }
