@@ -147,7 +147,7 @@ public class MemberService {
         memberRepository.delete(findMember);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public MemberInfoResponse getMemberInfo(String userId) {
         long id = Long.parseLong(userId);
         Member findMember = memberRepository.findById(id)
