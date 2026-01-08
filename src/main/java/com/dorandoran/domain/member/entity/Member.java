@@ -76,4 +76,12 @@ public class Member extends BaseTime {
         member.role = role;
         return member;
     }
+
+    public void modifyNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void modifyPassword(String newPassword) {
+        this.password = newPassword;
+    }
 }

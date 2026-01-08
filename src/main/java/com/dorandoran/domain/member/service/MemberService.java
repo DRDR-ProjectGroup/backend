@@ -1,9 +1,6 @@
 package com.dorandoran.domain.member.service;
 
-import com.dorandoran.domain.member.dto.request.EmailRequest;
-import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
-import com.dorandoran.domain.member.dto.request.JoinRequest;
-import com.dorandoran.domain.member.dto.request.LoginRequest;
+import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.entity.Member;
@@ -154,6 +151,36 @@ public class MemberService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         return MemberInfoResponse.of(findMember);
+    }
+
+    @Transactional
+    public void modifyNickname(String userId, NicknameRequest nicknameDto) {
+        long id = Long.parseLong(userId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 닉네임 중복 검사
+        if (memberRepository.existsByNickname(nicknameDto.getNewNickname())) {
+            throw new CustomException(ErrorCode.DUPLICATED_NICKNAME);
+        }
+
+        findMember.modifyNickname(nicknameDto.getNewNickname());
+    }
+
+    @Transactional
+    public void modifyPassword(String userId, PasswordRequest passwordDto) {
+        long id = Long.parseLong(userId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 현재 비밀번호 일치 여부 확인
+        if (passwordEncoder.matches(passwordDto.getNewPassword(), findMember.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        // 새 비밀번호 암호화 후 저장
+        String newPassword = passwordEncoder.encode(passwordDto.getNewPassword());
+        findMember.modifyPassword(newPassword);
     }
 
     // AuthenticationManager 를 통해 인증 처리

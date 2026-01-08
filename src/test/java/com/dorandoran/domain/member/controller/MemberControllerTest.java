@@ -1,10 +1,7 @@
 package com.dorandoran.domain.member.controller;
 
 import com.dorandoran.SpringBootTestSupporter;
-import com.dorandoran.domain.member.dto.request.EmailRequest;
-import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
-import com.dorandoran.domain.member.dto.request.JoinRequest;
-import com.dorandoran.domain.member.dto.request.LoginRequest;
+import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.factory.MemberFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -211,5 +208,46 @@ class MemberControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.username").value(member.getUsername()))
                 .andExpect(jsonPath("$.data.nickname").value(member.getNickname()))
                 .andExpect(jsonPath("$.data.email").value(member.getEmail()));
+    }
+
+    @DisplayName("modifyNickname 테스트")
+    @Test
+    void modifyNickname() throws Exception {
+        // given
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        NicknameRequest nicknameRequest = new NicknameRequest("newNick");
+
+        // when
+        ResultActions result = mockMvc.perform(patch("/api/v1/members/me/nickname")
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(nicknameRequest)));
+
+        // then
+        result.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(NICKNAME_MODIFY_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(NICKNAME_MODIFY_SUCCESS.getHttpStatus().value()));
+    }
+
+    @DisplayName("modifyPassword 테스트")
+    @Test
+    void modifyPassword() throws Exception {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        PasswordRequest passwordRequest = new PasswordRequest("NewPass@1234");
+
+        // when
+        ResultActions result = mockMvc.perform(patch("/api/v1/members/me/password")
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(passwordRequest)));
+
+        // then
+        result.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(PASSWORD_MODIFY_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(PASSWORD_MODIFY_SUCCESS.getHttpStatus().value()));
     }
 }
