@@ -14,6 +14,8 @@ public enum SuccessCode {
     JOIN_SUCCESS(HttpStatus.CREATED, "회원가입 성공"),
     RESIGN_SUCCESS(HttpStatus.OK, "회원탈퇴 성공"),
     MEMBER_INFO_SUCCESS(HttpStatus.OK, "회원 정보 조회 성공"),
+    NICKNAME_MODIFY_SUCCESS(HttpStatus.OK, "닉네임 수정 성공"),
+    PASSWORD_MODIFY_SUCCESS(HttpStatus.OK, "비밀번호 수정 성공"),
 
     // JWT
     TOKEN_REISSUE_SUCCESS(HttpStatus.OK, "토큰 재발급 성공"),

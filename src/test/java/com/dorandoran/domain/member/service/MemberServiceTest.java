@@ -1,9 +1,7 @@
 package com.dorandoran.domain.member.service;
 
 import com.dorandoran.SpringBootTestSupporter;
-import com.dorandoran.domain.member.dto.request.EmailRequest;
-import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
-import com.dorandoran.domain.member.dto.request.JoinRequest;
+import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
@@ -198,5 +196,63 @@ class MemberServiceTest extends SpringBootTestSupporter {
                 .isInstanceOf(CustomException.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @DisplayName("닉네임 변경")
+    @Test
+    void modifyNickname() {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        NicknameRequest dto = new NicknameRequest("newNickname");
+
+        // when
+        memberService.modifyNickname(String.valueOf(member.getId()), dto);
+
+        // then
+        Member updatedMember = memberRepository.findById(member.getId()).get();
+        assertThat(updatedMember.getNickname()).isEqualTo(dto.getNewNickname());
+    }
+
+    @DisplayName("닉네임 변경 - 중복 닉네임")
+    @Test
+    void modifyNickname_duplicateNickname() {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        NicknameRequest dto = new NicknameRequest(member.getNickname());
+
+        // when / then
+        assertThatThrownBy(() -> memberService.modifyNickname(String.valueOf(member.getId()), dto))
+                .isInstanceOf(CustomException.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.DUPLICATED_NICKNAME);
+    }
+
+    @DisplayName("비밀번호 변경")
+    @Test
+    void modifyPassword() {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        PasswordRequest dto = new PasswordRequest("NewPass@123");
+
+        // when
+        memberService.modifyPassword(String.valueOf(member.getId()), dto);
+
+        // then
+        Member updatedMember = memberRepository.findById(member.getId()).get();
+        assertThat(passwordEncoder.matches(dto.getNewPassword(), updatedMember.getPassword())).isTrue();
+    }
+
+    @DisplayName("비밀번호 변경 - 현재 비밀번호와 동일")
+    @Test
+    void modifyPassword_sameAsCurrent() {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        PasswordRequest dto = new PasswordRequest("test@1234"); // 초기 비밀번호와 동일
+
+        // when / then
+        assertThatThrownBy(() -> memberService.modifyPassword(String.valueOf(member.getId()), dto))
+                .isInstanceOf(CustomException.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.INVALID_CURRENT_PASSWORD);
     }
 }

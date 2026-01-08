@@ -212,4 +212,46 @@ class MemberControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.nickname").value(member.getNickname()))
                 .andExpect(jsonPath("$.data.email").value(member.getEmail()));
     }
+
+    @DisplayName("modifyNickname 테스트")
+    @Test
+    void modifyNickname() throws Exception {
+        // given
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+
+        String requestBody = "{\"newNickname\":\"" + "newNick" + "\"}";
+
+        // when
+        ResultActions result = mockMvc.perform(patch("/api/v1/members/me/nickname")
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+                .contentType("application/json")
+                .content(requestBody));
+
+        // then
+        result.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(NICKNAME_MODIFY_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(NICKNAME_MODIFY_SUCCESS.getHttpStatus().value()));
+    }
+
+    @DisplayName("modifyPassword 테스트")
+    @Test
+    void modifyPassword() throws Exception {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        String requestBody = "{\"newPassword\":\"" + "NewPass@1234" + "\"}";
+
+        // when
+        ResultActions result = mockMvc.perform(patch("/api/v1/members/me/password")
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+                .contentType("application/json")
+                .content(requestBody));
+
+        // then
+        result.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(PASSWORD_MODIFY_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(PASSWORD_MODIFY_SUCCESS.getHttpStatus().value()));
+    }
 }

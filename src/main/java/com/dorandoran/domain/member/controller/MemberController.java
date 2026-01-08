@@ -1,9 +1,6 @@
 package com.dorandoran.domain.member.controller;
 
-import com.dorandoran.domain.member.dto.request.EmailRequest;
-import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
-import com.dorandoran.domain.member.dto.request.JoinRequest;
-import com.dorandoran.domain.member.dto.request.LoginRequest;
+import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.service.MemberService;
@@ -106,6 +103,28 @@ public class MemberController {
     ) {
         MemberInfoResponse memberInfo = memberService.getMemberInfo(principal.getName());
         return BaseResponse.ok(SuccessCode.MEMBER_INFO_SUCCESS, memberInfo);
+    }
+
+    @PatchMapping("/me/nickname")
+    @Operation(summary = "닉네임 수정")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> modifyNickname(
+            @Valid @RequestBody NicknameRequest nicknameDto,
+            Principal principal
+    ) {
+        memberService.modifyNickname(principal.getName(), nicknameDto);
+        return BaseResponse.ok(SuccessCode.NICKNAME_MODIFY_SUCCESS);
+    }
+
+    @PatchMapping("/me/password")
+    @Operation(summary = "비밀번호 수정")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> modifyPassword(
+            @Valid @RequestBody PasswordRequest passwordDto,
+            Principal principal
+    ) {
+        memberService.modifyPassword(principal.getName(), passwordDto);
+        return BaseResponse.ok(SuccessCode.PASSWORD_MODIFY_SUCCESS);
     }
 
     private void addJwtTokenResponse(HttpServletResponse response, MemberTokenResponse token) {

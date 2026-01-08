@@ -18,6 +18,7 @@ public enum ErrorCode {
     DUPLICATED_NICKNAME(HttpStatus.BAD_REQUEST, "중복된 닉네임입니다."),
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "중복된 이메일입니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+    INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 일치합니다."),
 
     // JWT 오류
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
@@ -38,7 +39,8 @@ public enum ErrorCode {
     INVALID_REQUEST_DATA(HttpStatus.BAD_REQUEST, "데이터 저장 실패, 재시도 혹은 관리자에게 문의해주세요."),
     FAIL(HttpStatus.BAD_REQUEST, "요청 응답 실패, 관리자에게 문의해주세요."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다.");
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
+    ;
 
 
     private final HttpStatus httpStatus;
