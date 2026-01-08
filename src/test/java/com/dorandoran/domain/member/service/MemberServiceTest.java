@@ -186,4 +186,17 @@ class MemberServiceTest extends SpringBootTestSupporter {
         // then
         assertThat(memberRepository.findByUsername(expiredUsername)).isEmpty();
     }
+
+    @DisplayName("회원 정보 조회 - 존재하지 않는 회원")
+    @Test
+    void getMemberInfo_memberNotFound() {
+        // given
+        String userId = "999999999";
+
+        // when / then
+        assertThatThrownBy(() -> memberService.getMemberInfo(userId))
+                .isInstanceOf(CustomException.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
 }
