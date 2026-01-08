@@ -13,6 +13,7 @@ public enum SuccessCode {
     LOGOUT_SUCCESS(HttpStatus.OK, "로그아웃 성공"),
     JOIN_SUCCESS(HttpStatus.CREATED, "회원가입 성공"),
     RESIGN_SUCCESS(HttpStatus.OK, "회원탈퇴 성공"),
+    MEMBER_INFO_SUCCESS(HttpStatus.OK, "회원 정보 조회 성공"),
 
     // JWT
     TOKEN_REISSUE_SUCCESS(HttpStatus.OK, "토큰 재발급 성공"),

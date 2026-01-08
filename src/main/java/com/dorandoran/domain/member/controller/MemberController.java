@@ -4,6 +4,7 @@ import com.dorandoran.domain.member.dto.request.EmailRequest;
 import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
 import com.dorandoran.domain.member.dto.request.JoinRequest;
 import com.dorandoran.domain.member.dto.request.LoginRequest;
+import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.global.jwt.JwtProperties;
@@ -95,6 +96,16 @@ public class MemberController {
         memberService.resign(principal.getName());
         deleteRefreshTokenCookie(response);
         return BaseResponse.ok(SuccessCode.RESIGN_SUCCESS);
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "회원 정보 조회")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<MemberInfoResponse> getMemberInfo(
+            Principal principal
+    ) {
+        MemberInfoResponse memberInfo = memberService.getMemberInfo(principal.getName());
+        return BaseResponse.ok(SuccessCode.MEMBER_INFO_SUCCESS, memberInfo);
     }
 
     private void addJwtTokenResponse(HttpServletResponse response, MemberTokenResponse token) {

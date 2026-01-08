@@ -4,6 +4,7 @@ import com.dorandoran.domain.member.dto.request.EmailRequest;
 import com.dorandoran.domain.member.dto.request.EmailVerificationRequest;
 import com.dorandoran.domain.member.dto.request.JoinRequest;
 import com.dorandoran.domain.member.dto.request.LoginRequest;
+import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
@@ -144,6 +145,15 @@ public class MemberService {
 
         redisRepository.deleteRefreshToken(userId);
         memberRepository.delete(findMember);
+    }
+
+    @Transactional
+    public MemberInfoResponse getMemberInfo(String userId) {
+        long id = Long.parseLong(userId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return MemberInfoResponse.of(findMember);
     }
 
     // AuthenticationManager 를 통해 인증 처리
