@@ -14,7 +14,6 @@ import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +23,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -73,7 +71,6 @@ public class PostService {
 
             StoredMedia stored = mediaStorage.save(file, mediaType);
 
-            log.debug("stored media info: {}", stored);
             // PostImage 엔티티 생성 및 저장 로직 추가
             PostMedia postMedia = PostMedia.builder()
                     .post(post)
