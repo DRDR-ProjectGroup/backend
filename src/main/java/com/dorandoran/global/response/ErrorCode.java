@@ -32,6 +32,12 @@ public enum ErrorCode {
     AUTH_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "인증 요청 이력이 없습니다. 이메일을 다시 확인해 주세요."),
     EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
 
+    // Category 오류
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
+
+    // Post 오류
+    INVALID_MEDIA_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 미디어 타입입니다."),
+    
     // Common 오류,
     VALIDATION_FAIL_ERROR(HttpStatus.BAD_REQUEST, "(exception error 메세지에 따름)"),
     NOT_SUPPORTED_METHOD(HttpStatus.METHOD_NOT_ALLOWED, "(exception error 메세지에 따름"),
