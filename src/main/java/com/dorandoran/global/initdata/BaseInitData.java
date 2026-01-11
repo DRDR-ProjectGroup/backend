@@ -6,6 +6,8 @@ import com.dorandoran.domain.category.repository.CategoryGroupRepository;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.global.exception.CustomException;
+import com.dorandoran.global.response.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -77,7 +79,7 @@ public class BaseInitData {
         categoryList.add(
                 categoryRepository.save(
                         Category.createCategory(
-                                categoryGroupRepository.findByName("일반").orElse(null),
+                                categoryGroupRepository.findByName("일반").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
                                 "자유",
                                 "free"
                         )
@@ -86,7 +88,7 @@ public class BaseInitData {
         categoryList.add(
                 categoryRepository.save(
                         Category.createCategory(
-                                categoryGroupRepository.findByName("유머").orElse(null),
+                                categoryGroupRepository.findByName("유머").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
                                 "유머",
                                 "humor"
                         )
@@ -95,7 +97,7 @@ public class BaseInitData {
         categoryList.add(
                 categoryRepository.save(
                         Category.createCategory(
-                                categoryGroupRepository.findByName("게임").orElse(null),
+                                categoryGroupRepository.findByName("게임").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
                                 "롤",
                                 "lol"
                         )
