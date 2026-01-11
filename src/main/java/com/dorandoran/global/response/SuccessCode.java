@@ -24,6 +24,13 @@ public enum SuccessCode {
     EMAIL_SEND_SUCCESS(HttpStatus.OK, "이메일 인증 코드 전송 성공"),
     EMAIL_VERIFY_SUCCESS(HttpStatus.OK, "이메일 인증 코드 검증 성공"),
 
+    // Post
+    POST_CREATE_SUCCESS(HttpStatus.CREATED, "게시글 생성 성공"),
+    POST_MODIFY_SUCCESS(HttpStatus.OK, "게시글 수정 성공"),
+    POST_DELETE_SUCCESS(HttpStatus.OK, "게시글 삭제 성공"),
+    POST_DETAIL_SUCCESS(HttpStatus.OK, "게시글 상세 조회 성공"),
+    POST_LIST_SUCCESS(HttpStatus.OK, "게시글 목록 조회 성공"),
+
     // Common
     SUCCESS(HttpStatus.OK, "요청 응답 성공"),
     ;

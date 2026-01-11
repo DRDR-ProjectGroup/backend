@@ -3,6 +3,11 @@ package com.dorandoran;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.member.service.EmailService;
 import com.dorandoran.domain.member.service.MemberService;
+import com.dorandoran.domain.post.repository.PostMediaRepository;
+import com.dorandoran.domain.post.repository.PostRepository;
+import com.dorandoran.domain.post.service.PostService;
+import com.dorandoran.factory.CategoryFactory;
+import com.dorandoran.factory.CategoryGroupFactory;
 import com.dorandoran.factory.MemberFactory;
 import com.dorandoran.global.jwt.JWTUtil;
 import com.dorandoran.global.jwt.JwtProperties;
@@ -28,6 +33,12 @@ public abstract class SpringBootTestSupporter {
     @Autowired
     public MemberFactory memberFactory;
 
+    @Autowired
+    public CategoryFactory categoryFactory;
+
+    @Autowired
+    public CategoryGroupFactory categoryGroupFactory;
+
     /**
      * mock Mvc
      */
@@ -43,6 +54,9 @@ public abstract class SpringBootTestSupporter {
     @Autowired
     protected MemberService memberService;
 
+    @Autowired
+    protected PostService postService;
+
     /**
      * repository
      */
@@ -51,6 +65,12 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     protected MemberRepository memberRepository;
+
+    @Autowired
+    protected PostRepository postRepository;
+
+    @Autowired
+    protected PostMediaRepository postMediaRepository;
 
     /**
      * Common
@@ -63,7 +83,7 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     protected ObjectMapper objectMapper;
-    
+
     @Autowired
     protected JWTUtil jwtUtil;
 

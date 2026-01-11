@@ -2,11 +2,9 @@ package com.dorandoran.domain.member.entity;
 
 import com.dorandoran.domain.member.type.MemberStatus;
 import com.dorandoran.domain.member.type.Role;
+import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.global.jpa.entity.BaseTime;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +13,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -45,17 +44,19 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     private MemberStatus status;
 
-    @Column(nullable = true)
+    @OneToMany(mappedBy = "member")
+    private List<Post> posts;
+
     private LocalDateTime deletedAt;
 
     @Builder
-    private Member(String username, String password, String email, String nickname, Role role, MemberStatus status) {
+    private Member(String username, String password, String email, String nickname) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-        this.role = role;
-        this.status = status;
+        this.role = Role.ROLE_MEMBER;
+        this.status = MemberStatus.ACTIVE;
     }
 
     public static Member createMember(String username, String password, String email, String nickname) {
@@ -64,8 +65,6 @@ public class Member extends BaseTime {
                 .password(password)
                 .email(email)
                 .nickname(nickname)
-                .role(Role.ROLE_MEMBER)
-                .status(MemberStatus.ACTIVE)
                 .build();
     }
 
