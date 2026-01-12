@@ -53,4 +53,16 @@ public class JWTUtil {
                 .signWith(secretKey)
                 .compact();
     }
+
+    public boolean isValidAccessToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

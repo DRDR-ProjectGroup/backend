@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static com.dorandoran.global.jwt.JWTConstant.*;
 
@@ -26,6 +27,14 @@ public abstract class FilterUtil {
     public static String extractRefreshToken(HttpServletRequest request) {
         return Arrays.stream(request.getCookies())
                 .filter(cookie -> cookie.getName().equals(REFRESH_TOKEN_HEADER))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static String extractGuestToken(HttpServletRequest request) {
+        return Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(cookie -> cookie.getName().equals(GUEST_TOKEN_HEADER))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);

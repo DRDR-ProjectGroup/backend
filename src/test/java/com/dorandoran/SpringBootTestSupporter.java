@@ -9,6 +9,7 @@ import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.factory.CategoryFactory;
 import com.dorandoran.factory.CategoryGroupFactory;
 import com.dorandoran.factory.MemberFactory;
+import com.dorandoran.factory.PostFactory;
 import com.dorandoran.global.jwt.JWTUtil;
 import com.dorandoran.global.jwt.JwtProperties;
 import com.dorandoran.global.redis.RedisRepository;
@@ -38,6 +39,9 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     public CategoryGroupFactory categoryGroupFactory;
+
+    @Autowired
+    public PostFactory postFactory;
 
     /**
      * mock Mvc

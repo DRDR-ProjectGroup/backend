@@ -5,6 +5,8 @@ import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.response.PostMediaResponse;
+import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostMedia;
 import com.dorandoran.domain.post.repository.PostRepository;
@@ -12,6 +14,7 @@ import com.dorandoran.domain.post.storage.MediaStorage;
 import com.dorandoran.domain.post.storage.StoredMedia;
 import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.global.exception.CustomException;
+import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
+    private final RedisRepository redisRepository;
 
     @Transactional
     public void createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
@@ -51,6 +55,27 @@ public class PostService {
         if (files != null && !files.isEmpty()) {
             savePostMedia(saved, files);
         }
+    }
+
+    @Transactional
+    public PostResponse getPostById(Long postId, String viewerIdentifier) {
+        // 조회수 증가
+        boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
+
+        if (!viewed) {
+            postRepository.incrementViewCount(postId);
+
+            redisRepository.setViewedPost(postId, viewerIdentifier);
+        }
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
+                .map(PostMediaResponse::of)
+                .toList();
+
+        return PostResponse.of(post, mediaResponses);
     }
 
     // 파일 타입 확인 메서드

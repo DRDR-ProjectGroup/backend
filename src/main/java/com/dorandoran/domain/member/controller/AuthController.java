@@ -52,7 +52,8 @@ public class AuthController {
         );
         String accesstoken = FilterUtil.extractAccessToken(request);
         String refreshtoken = FilterUtil.extractRefreshToken(request);
-        return BaseResponse.ok(SuccessCode.SUCCESS, AuthMemberResponse.of(findMember, accesstoken, refreshtoken));
+        String guesttoken = FilterUtil.extractGuestToken(request);
+        return BaseResponse.ok(SuccessCode.SUCCESS, AuthMemberResponse.of(findMember, accesstoken, refreshtoken, guesttoken));
     }
 
     @PostMapping("/reissue")

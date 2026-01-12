@@ -76,4 +76,14 @@ public class RedisRepository {
         String key = EMAIL_VERIFIED_PREFIX + email;
         redisTemplate.delete(key);
     }
+
+    public boolean hasViewedPost(Long postId, String viewerIdentifier) {
+        String key = "post:viewCount:" + postId + ":" + viewerIdentifier;
+        return redisTemplate.hasKey(key);
+    }
+
+    public void setViewedPost(Long postId, String viewerIdentifier) {
+        String key = "post:viewCount:" + postId + ":" + viewerIdentifier;
+        redisTemplate.opsForValue().set(key, "1", 30, TimeUnit.MINUTES);
+    }
 }

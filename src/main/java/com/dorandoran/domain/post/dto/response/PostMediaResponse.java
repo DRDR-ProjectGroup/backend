@@ -1,5 +1,6 @@
 package com.dorandoran.domain.post.dto.response;
 
+import com.dorandoran.domain.post.entity.PostMedia;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,10 +14,10 @@ public class PostMediaResponse {
     private String url;
     private int order;
 
-    public static PostMediaResponse of(String url, int order) {
+    public static PostMediaResponse of(PostMedia postMedia) {
         return PostMediaResponse.builder()
-                .url(url)
-                .order(order)
+                .url(postMedia.getUrl())
+                .order(postMedia.getSortOrder())
                 .build();
     }
 }
