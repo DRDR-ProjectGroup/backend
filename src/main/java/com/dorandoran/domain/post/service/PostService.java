@@ -35,7 +35,7 @@ public class PostService {
     private final RedisRepository redisRepository;
 
     @Transactional
-    public void createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
+    public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
         // 회원 조회
         Long parsedId = Long.valueOf(memberId);
         Member member = memberRepository.findById(parsedId)
@@ -48,13 +48,19 @@ public class PostService {
         // 게시글 생성 로직 구현
         Post post = Post.createPost(member, category, request.getTitle(), request.getContent());
 
-        // 우선 post를 저장해 부모 엔티티가 영속화된 상태로 만듭니다.
+        // 우선 post를 저장해 부모 엔티티가 영속화된 상태로 만듦
         Post saved = postRepository.save(post);
 
-        // 이미지 처리 로직 구현 (필요한 경우) - 부모가 영속 상태이므로, 미디어를 개별 저장합니다.
+        // 이미지 처리 로직 구현 (필요한 경우) - 부모가 영속 상태이므로, 미디어를 개별 저장
         if (files != null && !files.isEmpty()) {
             savePostMedia(saved, files);
         }
+
+        List<PostMediaResponse> mediaResponses = saved.getPostMediaList().stream()
+                .map(PostMediaResponse::of)
+                .toList();
+
+        return PostResponse.of(saved, mediaResponses);
     }
 
     @Transactional
@@ -78,34 +84,81 @@ public class PostService {
         return PostResponse.of(post, mediaResponses);
     }
 
+    @Transactional
+    public PostResponse modifyPost(String memberId, Long postId, PostCreateRequest dto, List<MultipartFile> files) throws IOException {
+        // 회원 조회
+        Long parsedId = Long.valueOf(memberId);
+        Member member = memberRepository.findById(parsedId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        // 작성자 검증
+        if (!post.getMember().getId().equals(member.getId())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+        }
+
+        // 게시글 수정 로직 구현
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+
+        // 이미지 처리 로직 구현 (파일이 주어지면 기존 미디어를 교체)
+        if (files != null && !files.isEmpty()) {
+            // 기존 미디어 제거 (orphanRemoval=true 이므로 영속성 컨텍스트에 의해 삭제됨)
+            post.clearMedia();
+
+            // 새 미디어 추가
+            savePostMedia(post, files);
+        }
+
+        List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
+                .map(PostMediaResponse::of)
+                .toList();
+
+        return PostResponse.of(post, mediaResponses);
+    }
+
     // 파일 타입 확인 메서드
     private MediaType resolveMediaType(MultipartFile file) {
+        String contentType = file.getContentType();
+
+        if (contentType == null) {
+            throw new CustomException(ErrorCode.INVALID_MEDIA_TYPE);
+        }
+
         if (file.getContentType().startsWith("image")) {
             return MediaType.IMAGE;
         }
         if (file.getContentType().startsWith("video")) {
             return MediaType.VIDEO;
         }
+
         throw new CustomException(ErrorCode.INVALID_MEDIA_TYPE);
     }
 
     private void savePostMedia(Post post, List<MultipartFile> mediaList) throws IOException {
-        for (int i = 0; i < mediaList.size(); i++) {
-            MultipartFile file = mediaList.get(i);
-            MediaType mediaType = resolveMediaType(file);
+        int order = 0;
 
+        for (MultipartFile file : mediaList) {
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
+
+            MediaType mediaType = resolveMediaType(file);
             StoredMedia stored = mediaStorage.save(file, mediaType);
 
-            // PostImage 엔티티 생성 및 저장 로직 추가
-            PostMedia postMedia = PostMedia.builder()
-                    .post(post)
-                    .originalName(stored.getOriginalName())
-                    .storedName(stored.getStoredName())
-                    .url(stored.getUrl())
-                    .size(stored.getSize())
-                    .mediaType(mediaType)
-                    .sortOrder(i)
-                    .build();
+            // PostMedia 엔티티 생성 및 저장 로직 추가
+            PostMedia postMedia = PostMedia.createPostMedia(
+                    post,
+                    mediaType,
+                    stored.getOriginalName(),
+                    stored.getStoredName(),
+                    stored.getUrl(),
+                    stored.getSize(),
+                    order++
+            );
 
             post.addMedia(postMedia);
         }

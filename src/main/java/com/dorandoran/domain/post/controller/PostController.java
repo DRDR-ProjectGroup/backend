@@ -27,14 +27,14 @@ public class PostController {
     @PostMapping(path = "/{categoryName}", consumes = {"multipart/form-data"})
     @Operation(summary = "게시글 생성", description = "카테고리 이름에 해당하는 게시글을 생성합니다.")
     @SecurityRequirement(name = "bearerAuth")
-    public BaseResponse<Void> createPost(
+    public BaseResponse<PostResponse> createPost(
             @PathVariable String categoryName,
             @RequestPart("post") PostCreateRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             Principal principal
     ) throws IOException {
-        postService.createPost(principal.getName(), categoryName, request, files);
-        return BaseResponse.ok(SuccessCode.POST_CREATE_SUCCESS);
+        PostResponse postResponse = postService.createPost(principal.getName(), categoryName, request, files);
+        return BaseResponse.ok(SuccessCode.POST_CREATE_SUCCESS, postResponse);
     }
 
     @GetMapping("/{postId}")
@@ -45,5 +45,18 @@ public class PostController {
     ) {
         PostResponse postResponse = postService.getPostById(postId, principal != null ? principal.getName() : guestToken);
         return BaseResponse.ok(SuccessCode.POST_DETAIL_SUCCESS, postResponse);
+    }
+
+    @PutMapping(path = "/{postId}", consumes = {"multipart/form-data"})
+    @Operation(summary = "게시글 수정", description = "ID에 해당하는 게시글을 수정합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<PostResponse> modifyPost(
+            @PathVariable Long postId,
+            @RequestPart("post") PostCreateRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            Principal principal
+    ) throws IOException {
+        PostResponse postResponse = postService.modifyPost(principal.getName(), postId, request, files);
+        return BaseResponse.ok(SuccessCode.POST_MODIFY_SUCCESS, postResponse);
     }
 }

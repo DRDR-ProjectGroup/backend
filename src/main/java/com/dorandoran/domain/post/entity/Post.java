@@ -4,10 +4,7 @@ import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,9 +24,11 @@ public class Post extends BaseTime {
     private Category category;
 
     @Column(nullable = false)
+    @Setter
     private String title;
 
     @Column(nullable = false)
+    @Setter
     private String content;
 
     @Column(nullable = false)
@@ -67,6 +66,12 @@ public class Post extends BaseTime {
     }
 
     public void addMedia(PostMedia postMedia) {
+        if (postMedia == null) return;
+        postMedia.setPost(this);
         this.postMediaList.add(postMedia);
+    }
+
+    public void clearMedia() {
+        this.postMediaList.clear();
     }
 }
