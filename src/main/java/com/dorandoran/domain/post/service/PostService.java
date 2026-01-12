@@ -101,8 +101,7 @@ public class PostService {
         }
 
         // 게시글 수정 로직 구현
-        post.setTitle(dto.getTitle());
-        post.setContent(dto.getContent());
+        post.modifyTitleAndContent(dto.getTitle(), dto.getContent());
 
         // 이미지 처리 로직 구현 (파일이 주어지면 기존 미디어를 교체)
         if (files != null && !files.isEmpty()) {
@@ -128,10 +127,10 @@ public class PostService {
             throw new CustomException(ErrorCode.INVALID_MEDIA_TYPE);
         }
 
-        if (file.getContentType().startsWith("image")) {
+        if (contentType.startsWith("image")) {
             return MediaType.IMAGE;
         }
-        if (file.getContentType().startsWith("video")) {
+        if (contentType.startsWith("video")) {
             return MediaType.VIDEO;
         }
 
