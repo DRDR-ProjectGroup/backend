@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.dorandoran.global.jwt.JWTConstant.GUEST_TOKEN_EXPIRE_SECONDS;
 import static com.dorandoran.global.jwt.JWTConstant.GUEST_TOKEN_HEADER;
 
 @Component
@@ -53,7 +54,7 @@ public class GuestTokenFilter extends OncePerRequestFilter {
         ControllerUt.addCookie(
                 GUEST_TOKEN_HEADER,
                 UUID.randomUUID().toString(),
-                30 * 60, // 30 minutes
+                GUEST_TOKEN_EXPIRE_SECONDS,
                 response
         );
 

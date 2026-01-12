@@ -58,14 +58,14 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse getPostById(Long postId, String memberId) {
+    public PostResponse getPostById(Long postId, String viewerIdentifier) {
         // 조회수 증가
-        boolean viewed = redisRepository.hasViewedPost(postId, memberId);
+        boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
 
         if (!viewed) {
             postRepository.incrementViewCount(postId);
 
-            redisRepository.setViewedPost(postId, memberId);
+            redisRepository.setViewedPost(postId, viewerIdentifier);
         }
 
         Post post = postRepository.findById(postId)

@@ -14,4 +14,6 @@ public abstract class JWTConstant {
     public static final String REFRESH_TOKEN_CATEGORY = "refreshToken";
 
     public static final String CONTENT_TYPE = "Content-Type";
+
+    public static final int GUEST_TOKEN_EXPIRE_SECONDS = 30 * 60; // 30 minutes
 }
