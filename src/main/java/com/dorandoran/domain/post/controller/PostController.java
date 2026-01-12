@@ -59,4 +59,15 @@ public class PostController {
         PostResponse postResponse = postService.modifyPost(principal.getName(), postId, request, files);
         return BaseResponse.ok(SuccessCode.POST_MODIFY_SUCCESS, postResponse);
     }
+
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "게시글 삭제", description = "ID에 해당하는 게시글을 삭제합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> deletePost(
+            @PathVariable Long postId,
+            Principal principal
+    ) {
+        postService.deletePost(postId, principal.getName());
+        return BaseResponse.ok(SuccessCode.POST_DELETE_SUCCESS);
+    }
 }

@@ -20,8 +20,7 @@ import java.util.List;
 import static com.dorandoran.global.response.SuccessCode.POST_DETAIL_SUCCESS;
 import static com.dorandoran.global.response.SuccessCode.POST_MODIFY_SUCCESS;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -170,5 +169,20 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.mediaList[0].url").exists())
                 .andExpect(jsonPath("$.data.mediaList[0].order").value(0))
         ;
+    }
+
+    @DisplayName("게시글 삭제")
+    @Test
+    void deletePost() throws Exception {
+        // given
+        Long postId = post.getId();
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/v1/posts/{postId}", postId)
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+        );
+
+        // then
+        result.andExpect(status().isOk());
     }
 }

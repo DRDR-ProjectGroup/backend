@@ -37,9 +37,7 @@ public class PostService {
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
         // 회원 조회
-        Long parsedId = Long.valueOf(memberId);
-        Member member = memberRepository.findById(parsedId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = findMemberByStringId(memberId);
 
         // 카테고리 조회
         Category category = categoryRepository.findByAddress(categoryName)
@@ -74,8 +72,7 @@ public class PostService {
             redisRepository.setViewedPost(postId, viewerIdentifier);
         }
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Post post = findPostById(postId);
 
         List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
                 .map(PostMediaResponse::of)
@@ -87,13 +84,10 @@ public class PostService {
     @Transactional
     public PostResponse modifyPost(String memberId, Long postId, PostCreateRequest dto, List<MultipartFile> files) throws IOException {
         // 회원 조회
-        Long parsedId = Long.valueOf(memberId);
-        Member member = memberRepository.findById(parsedId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = findMemberByStringId(memberId);
 
         // 게시글 조회
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Post post = findPostById(postId);
 
         // 작성자 검증
         if (!post.getMember().getId().equals(member.getId())) {
@@ -117,6 +111,22 @@ public class PostService {
                 .toList();
 
         return PostResponse.of(post, mediaResponses);
+    }
+
+    @Transactional
+    public void deletePost(Long postId, String memberId) {
+        // 회원 조회
+        Member member = findMemberByStringId(memberId);
+
+        // 게시글 조회
+        Post post = findPostById(postId);
+
+        // 작성자 검증
+        if (!post.getMember().getId().equals(member.getId())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+        }
+
+        post.setDeletedAt();
     }
 
     // 파일 타입 확인 메서드
@@ -161,5 +171,20 @@ public class PostService {
 
             post.addMedia(postMedia);
         }
+    }
+
+    private Member findMemberByStringId(String memberId) {
+        Long parsedId = Long.valueOf(memberId);
+        return memberRepository.findById(parsedId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private Post findPostById(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        if (post.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.POST_NOT_FOUND);
+        }
+        return post;
     }
 }
