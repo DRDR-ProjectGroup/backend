@@ -67,6 +67,17 @@ public class Post extends BaseTime {
     }
 
     public void addMedia(PostMedia postMedia) {
+        if (postMedia == null) return;
+        postMedia.setPost(this);
         this.postMediaList.add(postMedia);
+    }
+
+    public void clearMedia() {
+        this.postMediaList.clear();
+    }
+
+    public void modifyTitleAndContent(String title, String content) {
+        this.title = title;
+        this.content = content;
     }
 }

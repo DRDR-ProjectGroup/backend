@@ -3,16 +3,14 @@ package com.dorandoran.domain.post.entity;
 import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostMedia extends BaseEntity {
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Post post;

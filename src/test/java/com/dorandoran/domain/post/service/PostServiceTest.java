@@ -21,13 +21,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PostServiceTest extends SpringBootTestSupporter {
 
     private Member member;
-    private List<CategoryGroup> categoryGroups;
+    private Member secondMember;
     private Category category;
 
     @BeforeEach
     void setUp() {
-        member = memberFactory.saveAndCreateMember(1).getFirst();
-        categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
+        List<Member> memberList = memberFactory.saveAndCreateMember(3);
+        member = memberList.get(0);
+        secondMember = memberList.get(1);
+        List<CategoryGroup> categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
         category = categoryFactory.saveAndCreateCategory("게임", "lol");
     }
 
@@ -142,5 +144,99 @@ class PostServiceTest extends SpringBootTestSupporter {
         // then
         int viewCount = postRepository.findById(postId).get().getViewCount();
         assert (viewCount == 1);
+    }
+
+    @DisplayName("게시글 수정 실패 - 존재하지 않는 회원")
+    @Test
+    void modifyPost_Fail_NonExistentMember() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        String memberId = "9999";
+        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        List<MultipartFile> files = List.of(
+                new MockMultipartFile(
+                        "files",
+                        "image1.png",
+                        "image/png",
+                        "dummy image content".getBytes()
+                )
+        );
+
+        // when // then
+        assertThatThrownBy(() -> postService.modifyPost(memberId, postId, request, files))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 수정 실패 - 존재하지 않는 게시글")
+    @Test
+    void modifyPost_Fail_NonExistentPost() {
+        // given
+        Long nonExistentPostId = 9999L;
+        String memberId = member.getId().toString();
+        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        List<MultipartFile> files = List.of(
+                new MockMultipartFile(
+                        "files",
+                        "image1.png",
+                        "image/png",
+                        "dummy image content".getBytes()
+                )
+        );
+
+        // when // then
+        assertThatThrownBy(() -> postService.modifyPost(memberId, nonExistentPostId, request, files))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.POST_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 수정 실패 - 작성자 불일치")
+    @Test
+    void modifyPost_Fail_AuthorMismatch() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        String secondMemberId = secondMember.getId().toString();
+        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        List<MultipartFile> files = List.of(
+                new MockMultipartFile(
+                        "files",
+                        "image1.png",
+                        "image/png",
+                        "dummy image content".getBytes()
+                )
+        );
+
+        // when // then
+        assertThatThrownBy(() -> postService.modifyPost(secondMemberId, postId, request, files))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+    }
+
+    @DisplayName("파일 타입 확인 - contentType이 null인 경우")
+    @Test
+    void validateFileType_Fail_NullContentType() {
+        // given
+        MultipartFile invalidFile = new MockMultipartFile(
+                "files",
+                "unknownfile",
+                null,
+                "dummy content".getBytes()
+        );
+
+        // when // then
+        assertThatThrownBy(() -> {
+            postService.createPost(
+                    member.getId().toString(),
+                    category.getAddress(),
+                    new PostCreateRequest("게시글 제목", "게시글 내용"),
+                    List.of(invalidFile)
+            );
+        })
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.INVALID_MEDIA_TYPE);
     }
 }

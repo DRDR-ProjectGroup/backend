@@ -38,6 +38,7 @@ public enum ErrorCode {
     // Post 오류
     INVALID_MEDIA_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 미디어 타입입니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
+    UNAUTHORIZED_POST_MODIFICATION(HttpStatus.UNAUTHORIZED, "게시글 수정/삭제 권한이 없습니다."),
 
     // Common 오류,
     VALIDATION_FAIL_ERROR(HttpStatus.BAD_REQUEST, "(exception error 메세지에 따름)"),
