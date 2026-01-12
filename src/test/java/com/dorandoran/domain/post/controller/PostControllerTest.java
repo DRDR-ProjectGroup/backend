@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static com.dorandoran.global.response.SuccessCode.POST_DETAIL_SUCCESS;
+import static com.dorandoran.global.response.SuccessCode.POST_MODIFY_SUCCESS;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -126,6 +127,48 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.content").value(expectedResponse.getContent()))
                 .andExpect(jsonPath("$.data.mediaList[0].url").value(expectedResponse.getMediaList().getFirst().getUrl()))
                 .andExpect(jsonPath("$.data.mediaList[0].order").value(expectedResponse.getMediaList().getFirst().getOrder()))
+        ;
+    }
+
+    @DisplayName("게시글 수정")
+    @Test
+    void modifyPost() throws Exception {
+        // given
+        Long postId = post.getId();
+        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+
+        MockMultipartFile postPart = new MockMultipartFile(
+                "post",
+                "post.json",
+                "application/json",
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile file1 = new MockMultipartFile(
+                "files",
+                "updated_image1.png",
+                "image/png",
+                "updated dummy image content 1".getBytes()
+        );
+
+        // when
+        ResultActions result = mockMvc.perform(multipart("/api/v1/posts/{postId}", postId)
+                .file(postPart)
+                .file(file1)
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+                .with(requestPostProcessor -> {
+                    requestPostProcessor.setMethod("PUT");
+                    return requestPostProcessor;
+                })
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(POST_MODIFY_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(POST_MODIFY_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.title").value(request.getTitle()))
+                .andExpect(jsonPath("$.data.content").value(request.getContent()))
+                .andExpect(jsonPath("$.data.mediaList[0].url").exists())
+                .andExpect(jsonPath("$.data.mediaList[0].order").value(0))
         ;
     }
 }
