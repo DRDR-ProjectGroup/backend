@@ -146,6 +146,21 @@ class PostServiceTest extends SpringBootTestSupporter {
         assert (viewCount == 1);
     }
 
+    @DisplayName("게시글 작성 - 삭제된 게시글이면 조회 안됨")
+    @Test
+    void getPost_Fail_DeletedPost() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        postService.deletePost(postId, member.getId().toString());
+        String memberId = member.getId().toString();
+
+        // when // then
+        assertThatThrownBy(() -> postService.getPostById(postId, memberId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.POST_NOT_FOUND);
+    }
+
     @DisplayName("게시글 수정 실패 - 존재하지 않는 회원")
     @Test
     void modifyPost_Fail_NonExistentMember() {
@@ -215,6 +230,30 @@ class PostServiceTest extends SpringBootTestSupporter {
                 .isEqualTo(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
     }
 
+    @DisplayName("게시글 수정 - 삭제된 게시글이면 수정 안됨")
+    @Test
+    void modifyPost_Fail_DeletedPost() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        postService.deletePost(postId, member.getId().toString());
+        String memberId = member.getId().toString();
+        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        List<MultipartFile> files = List.of(
+                new MockMultipartFile(
+                        "files",
+                        "image1.png",
+                        "image/png",
+                        "dummy image content".getBytes()
+                )
+        );
+
+        // when // then
+        assertThatThrownBy(() -> postService.modifyPost(memberId, postId, request, files))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.POST_NOT_FOUND);
+    }
+
     @DisplayName("파일 타입 확인 - contentType이 null인 경우")
     @Test
     void validateFileType_Fail_NullContentType() {
@@ -238,5 +277,62 @@ class PostServiceTest extends SpringBootTestSupporter {
                 .isInstanceOf(Exception.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.INVALID_MEDIA_TYPE);
+    }
+
+    @DisplayName("게시글 삭제 실패 - 존재하지 않는 회원")
+    @Test
+    void deletePost_Fail_NonExistentMember() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        String memberId = "9999";
+
+        // when // then
+        assertThatThrownBy(() -> postService.deletePost(postId, memberId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 삭제 실패 - 존재하지 않는 게시글")
+    @Test
+    void deletePost_Fail_NonExistentPost() {
+        // given
+        Long nonExistentPostId = 9999L;
+        String memberId = member.getId().toString();
+
+        // when // then
+        assertThatThrownBy(() -> postService.deletePost(nonExistentPostId, memberId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.POST_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 삭제 실패 - 작성자 불일치")
+    @Test
+    void deletePost_Fail_AuthorMismatch() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        String secondMemberId = secondMember.getId().toString();
+
+        // when // then
+        assertThatThrownBy(() -> postService.deletePost(postId, secondMemberId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+    }
+
+    @DisplayName("게시글 삭제 - 삭제된 게시글이면 삭제 안됨")
+    @Test
+    void deletePost_Fail_DeletedPost() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        postService.deletePost(postId, member.getId().toString());
+        String memberId = member.getId().toString();
+
+        // when // then
+        assertThatThrownBy(() -> postService.deletePost(postId, memberId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.POST_NOT_FOUND);
     }
 }
