@@ -82,7 +82,7 @@ public class MemberController {
         return BaseResponse.ok(SuccessCode.LOGOUT_SUCCESS);
     }
 
-    @PatchMapping("/resign")
+    @DeleteMapping("/resign")
     @Operation(summary = "회원 탈퇴")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> resign(

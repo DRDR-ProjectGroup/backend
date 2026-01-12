@@ -178,7 +178,7 @@ class PostControllerTest extends SpringBootTestSupporter {
         Long postId = post.getId();
 
         // when
-        ResultActions result = mockMvc.perform(patch("/api/v1/posts/{postId}", postId)
+        ResultActions result = mockMvc.perform(delete("/api/v1/posts/{postId}", postId)
                 .with(user(String.valueOf(member.getId())).roles("MEMBER"))
         );
 

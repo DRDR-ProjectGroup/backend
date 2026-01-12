@@ -175,7 +175,7 @@ class MemberControllerTest extends SpringBootTestSupporter {
         Member member = memberFactory.saveAndCreateMember(1).getFirst();
 
         // when
-        ResultActions result = mockMvc.perform(patch("/api/v1/members/resign")
+        ResultActions result = mockMvc.perform(delete("/api/v1/members/resign")
                 .with(user(String.valueOf(member.getId())).roles("MEMBER"))
                 .contentType("application/json"));
 
