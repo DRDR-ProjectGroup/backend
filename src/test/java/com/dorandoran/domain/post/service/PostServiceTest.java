@@ -5,6 +5,7 @@ import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.global.response.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         assertThatThrownBy(() -> postService.createPost(memberId, categoryName, request, files))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
-                .isEqualTo(com.dorandoran.global.response.ErrorCode.MEMBER_NOT_FOUND);
+                .isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 
     @DisplayName("게시글 생성 실패 - 존재하지 않는 카테고리")
@@ -85,7 +86,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         assertThatThrownBy(() -> postService.createPost(memberId, categoryName, request, files))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
-                .isEqualTo(com.dorandoran.global.response.ErrorCode.CATEGORY_NOT_FOUND);
+                .isEqualTo(ErrorCode.CATEGORY_NOT_FOUND);
     }
 
     @DisplayName("미디어 저장 실패 - 잘못된 파일 형식")
@@ -110,6 +111,36 @@ class PostServiceTest extends SpringBootTestSupporter {
         })
                 .isInstanceOf(Exception.class)
                 .extracting("code")
-                .isEqualTo(com.dorandoran.global.response.ErrorCode.INVALID_MEDIA_TYPE);
+                .isEqualTo(ErrorCode.INVALID_MEDIA_TYPE);
+    }
+
+    @DisplayName("게시글 조회 실패 - 존재하지 않는 게시글")
+    @Test
+    void getPost_Fail_NonExistentPost() {
+        // given
+        Long nonExistentPostId = 9999L;
+        String memberId = member.getId().toString();
+
+        // when // then
+        assertThatThrownBy(() -> postService.getPostById(nonExistentPostId, memberId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.POST_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 조회 - 조회수 증가 (30분에 1번만 가능)")
+    @Test
+    void getPost_Success_IncreaseViewCount() throws Exception {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        String memberId = member.getId().toString();
+
+        // when
+        postService.getPostById(postId, memberId);
+        postService.getPostById(postId, memberId); // 두 번째 조회는 조회수 증가 안됨
+
+        // then
+        int viewCount = postRepository.findById(postId).get().getViewCount();
+        assert (viewCount == 1);
     }
 }

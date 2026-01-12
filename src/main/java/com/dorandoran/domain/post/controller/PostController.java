@@ -1,6 +1,7 @@
 package com.dorandoran.domain.post.controller;
 
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
@@ -36,4 +37,13 @@ public class PostController {
         return BaseResponse.ok(SuccessCode.POST_CREATE_SUCCESS);
     }
 
+    @GetMapping("/{postId}")
+    @Operation(summary = "게시글 조회", description = "ID에 해당하는 게시글을 조회합니다.")
+    public BaseResponse<PostResponse> getPost(
+            @PathVariable Long postId, Principal principal,
+            @CookieValue(name = "GuestToken", required = false) String guestToken
+    ) {
+        PostResponse postResponse = postService.getPostById(postId, principal != null ? principal.getName() : guestToken);
+        return BaseResponse.ok(SuccessCode.POST_DETAIL_SUCCESS, postResponse);
+    }
 }

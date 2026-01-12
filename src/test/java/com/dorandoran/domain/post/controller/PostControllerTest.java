@@ -5,6 +5,9 @@ import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.response.PostMediaResponse;
+import com.dorandoran.domain.post.dto.response.PostResponse;
+import com.dorandoran.domain.post.entity.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,8 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.dorandoran.global.response.SuccessCode.POST_DETAIL_SUCCESS;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
@@ -24,12 +30,14 @@ class PostControllerTest extends SpringBootTestSupporter {
     private Member member;
     private List<CategoryGroup> categoryGroups;
     private Category category;
+    private Post post;
 
     @BeforeEach
     void setUp() {
         member = memberFactory.saveAndCreateMember(1).getFirst();
         categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
         category = categoryFactory.saveAndCreateCategory("게임", "lol");
+        post = postFactory.saveAndCreatePost(member, category, 1).getFirst();
     }
 
     @DisplayName("게시글 생성")
@@ -92,5 +100,32 @@ class PostControllerTest extends SpringBootTestSupporter {
 
         // then
         result.andExpect(status().isCreated());
+    }
+
+    @DisplayName("게시글 조회")
+    @Test
+    void getPost() throws Exception {
+        // given
+        Long postId = post.getId();
+        List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
+                .map(PostMediaResponse::of)
+                .toList();
+        PostResponse expectedResponse = PostResponse.of(post, mediaResponses);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts/{postId}", postId)
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(POST_DETAIL_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(POST_DETAIL_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.postId").value(expectedResponse.getPostId()))
+                .andExpect(jsonPath("$.data.title").value(expectedResponse.getTitle()))
+                .andExpect(jsonPath("$.data.content").value(expectedResponse.getContent()))
+                .andExpect(jsonPath("$.data.mediaList[0].url").value(expectedResponse.getMediaList().getFirst().getUrl()))
+                .andExpect(jsonPath("$.data.mediaList[0].order").value(expectedResponse.getMediaList().getFirst().getOrder()))
+        ;
     }
 }

@@ -3,6 +3,7 @@ package com.dorandoran.global.jwt;
 public abstract class JWTConstant {
     public static final String ACCESS_TOKEN_HEADER = "Authorization";
     public static final String REFRESH_TOKEN_HEADER = "RefreshToken";
+    public static final String GUEST_TOKEN_HEADER = "GuestToken";
     public static final String ACCESS_TOKEN_PREFIX = "Bearer";
 
     public static final String CLAIM_KEY_USER_ID = "userId";

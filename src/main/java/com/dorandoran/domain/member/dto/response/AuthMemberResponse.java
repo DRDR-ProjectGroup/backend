@@ -19,8 +19,9 @@ public class AuthMemberResponse {
     private String status;
     private String accessToken;
     private String refreshToken;
+    private String guestToken;
 
-    public static AuthMemberResponse of(Member member, String accessToken, String refreshToken) {
+    public static AuthMemberResponse of(Member member, String accessToken, String refreshToken, String guestToken) {
         return AuthMemberResponse.builder()
                 .memberId(member.getId())
                 .username(member.getUsername())
@@ -30,6 +31,7 @@ public class AuthMemberResponse {
                 .status(member.getStatus().name())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .guestToken(guestToken)
                 .build();
     }
 }

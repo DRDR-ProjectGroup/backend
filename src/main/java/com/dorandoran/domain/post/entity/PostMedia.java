@@ -47,4 +47,15 @@ public class PostMedia extends BaseEntity {
         this.sortOrder = sortOrder;
     }
 
+    public static PostMedia createPostMedia(Post post, MediaType mediaType, String originalName, String storedName, String url, long size, int sortOrder) {
+        return PostMedia.builder()
+                .post(post)
+                .mediaType(mediaType)
+                .originalName(originalName)
+                .storedName(storedName)
+                .url(url)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build();
+    }
 }

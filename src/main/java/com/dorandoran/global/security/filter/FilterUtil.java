@@ -31,6 +31,14 @@ public abstract class FilterUtil {
                 .orElse(null);
     }
 
+    public static String extractGuestToken(HttpServletRequest request) {
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(GUEST_TOKEN_HEADER))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
+
     public static void handleJwtException(HttpServletResponse response, JwtException e, ObjectMapper objectMapper) throws IOException {
         if (e instanceof ExpiredJwtException) {
             writeErrorResponse(response, ErrorCode.TOKEN_EXPIRED, objectMapper, ErrorCode.TOKEN_EXPIRED.getMessage());

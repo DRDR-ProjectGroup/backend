@@ -18,8 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
-import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_HEADER;
-import static com.dorandoran.global.jwt.JWTConstant.REFRESH_TOKEN_HEADER;
+import static com.dorandoran.global.jwt.JWTConstant.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -135,8 +134,14 @@ public class MemberController {
         ControllerUt.addCookie(
                 REFRESH_TOKEN_HEADER,
                 token.getRefreshToken(),
-                ControllerUt.parseMsToSec(jwtProperties.getRefreshExpiration()),
+                (int) jwtProperties.getRefreshExpiration(),
                 response);
+        ControllerUt.addCookie(
+                GUEST_TOKEN_HEADER,
+                null,
+                0,
+                response
+        );
     }
 
     private void deleteRefreshTokenCookie(HttpServletResponse response) {
