@@ -119,23 +119,50 @@ public class BaseInitData {
             return;
         }
 
-        Post post = Post.createPost(
-                memberRepository.findById(1L).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)),
-                categoryRepository.findByAddress("free").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
-                "첫 번째 게시글",
-                "이것은 첫 번째 게시글의 내용입니다."
-        );
-        postRepository.save(post);
+        for (int i = 1; i <= 5; i++) {
+            Post post = Post.createPost(
+                    memberRepository.findById(1L).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)),
+                    categoryRepository.findByAddress("free").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
+                    "게시글 제목 " + i,
+                    "게시글 내용 " + i
+            );
 
-        PostMedia postMedia = PostMedia.createPostMedia(
-                post,
-                MediaType.IMAGE,
-                "temp.jpg",
-                "stored_temp.jpg",
-                "http://example.com/stored_temp.jpg",
-                2048L,
-                0
-        );
-        postMediaRepository.save(postMedia);
+            PostMedia postMedia = PostMedia.createPostMedia(
+                    post,
+                    MediaType.IMAGE,
+                    "temp%d.jpg".formatted(i),
+                    "stored_temp%d.jpg".formatted(i),
+                    "http://example.com/stored_temp%d.jpg".formatted(i),
+                    2048L,
+                    0
+            );
+
+            post.addMedia(postMedia);
+
+            postRepository.save(post);
+        }
+
+        for (int i = 1; i <= 5; i++) {
+            Post post = Post.createPost(
+                    memberRepository.findById(1L).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)),
+                    categoryRepository.findByAddress("lol").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
+                    "게시글 제목 " + i,
+                    "게시글 내용 " + i
+            );
+
+            PostMedia postMedia = PostMedia.createPostMedia(
+                    post,
+                    MediaType.IMAGE,
+                    "temp%d.jpg".formatted(i),
+                    "stored_temp%d.jpg".formatted(i),
+                    "http://example.com/stored_temp%d.jpg".formatted(i),
+                    2048L,
+                    0
+            );
+
+            post.addMedia(postMedia);
+
+            postRepository.save(post);
+        }
     }
 }
