@@ -42,6 +42,8 @@ public class PostService {
     private final MediaStorage mediaStorage;
     private final RedisRepository redisRepository;
 
+    private static final int POST_POPULAR_LIKE_COUNT = 10;
+
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
         // 회원 조회
@@ -148,7 +150,7 @@ public class PostService {
 
         Pageable pageable = createPageable(page, size, sort);
 
-        Integer minLikeCount = (sort == PostSortType.POPULAR) ? 10 : null;
+        Integer minLikeCount = (sort == PostSortType.POPULAR) ? POST_POPULAR_LIKE_COUNT : null;
         String effectiveSearchType = (searchType != null) ? searchType.toString() : SearchType.ALL.toString();
         String effectiveKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
 
