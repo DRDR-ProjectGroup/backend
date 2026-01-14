@@ -335,4 +335,17 @@ class PostServiceTest extends SpringBootTestSupporter {
                 .extracting("code")
                 .isEqualTo(ErrorCode.POST_NOT_FOUND);
     }
+
+    @DisplayName("게시글 목록 조회 - 존재하지 않는 카테고리")
+    @Test
+    void getPostsByCategory_Fail_NonExistentCategory() {
+        // given
+        String nonExistentCategoryName = "nonexistent-category";
+
+        // when // then
+        assertThatThrownBy(() -> postService.getPostsByCategory(nonExistentCategoryName, null, null, 1, 20))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.CATEGORY_NOT_FOUND);
+    }
 }

@@ -5,6 +5,7 @@ import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.domain.post.dto.response.PostMediaResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.entity.Post;
@@ -16,7 +17,13 @@ import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
+import com.dorandoran.standard.page.dto.PageDto;
+import com.dorandoran.standard.search.SearchType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -127,6 +134,44 @@ public class PostService {
         }
 
         post.setDeletedAt();
+    }
+
+    @Transactional(readOnly = true)
+    public PageDto<PostListResponse> getPostsByCategory(String categoryName, SearchType searchType, String keyword, int page, int size) {
+        Category category = categoryRepository.findByAddress(categoryName)
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if (page <= 0) page = 1;
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<Post> postsPage;
+
+        // 검색어가 비어있다면 전체 조회
+        if (keyword == null || keyword.isBlank()) {
+            postsPage = postRepository.findByCategoryAndDeletedAtIsNull(category, pageable);
+        } else {
+            // 검색 타입에 따라 분기
+            switch (searchType == null ? SearchType.ALL : searchType) {
+                case TITLE:
+                    postsPage = postRepository.findByCategoryAndTitleContainingAndDeletedAtIsNull(category, keyword, pageable);
+                    break;
+                case CONTENT:
+                    postsPage = postRepository.findByCategoryAndContentContainingAndDeletedAtIsNull(category, keyword, pageable);
+                    break;
+                case AUTHOR:
+                    postsPage = postRepository.findByCategoryAndMember_NicknameContainingAndDeletedAtIsNull(category, keyword, pageable);
+                    break;
+                case ALL:
+                default:
+                    postsPage = postRepository.searchAllInCategory(category, keyword, pageable);
+                    break;
+            }
+        }
+
+        // 변환
+        Page<PostListResponse> dtoPage = postsPage.map(PostListResponse::of);
+
+        return new PageDto<>(dtoPage, category);
     }
 
     // 파일 타입 확인 메서드

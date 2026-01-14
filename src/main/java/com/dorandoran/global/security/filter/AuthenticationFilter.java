@@ -36,7 +36,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         // 1. AccessToken 추출
         String accessToken = FilterUtil.extractAccessToken(request);
-        log.debug("AuthenticationFilter - AccessToken: {}", accessToken);
 
         // 2. AccessToken 유무 확인
         if (accessToken == null) {

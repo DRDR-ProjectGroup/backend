@@ -8,6 +8,7 @@ import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.response.PostMediaResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.entity.Post;
+import com.dorandoran.global.response.SuccessCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,13 +32,15 @@ class PostControllerTest extends SpringBootTestSupporter {
     private List<CategoryGroup> categoryGroups;
     private Category category;
     private Post post;
+    private List<Post> posts;
 
     @BeforeEach
     void setUp() {
         member = memberFactory.saveAndCreateMember(1).getFirst();
         categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
         category = categoryFactory.saveAndCreateCategory("게임", "lol");
-        post = postFactory.saveAndCreatePost(member, category, 1).getFirst();
+        posts = postFactory.saveAndCreatePost(member, category, 10);
+        post = posts.getFirst();
     }
 
     @DisplayName("게시글 생성")
@@ -184,5 +187,112 @@ class PostControllerTest extends SpringBootTestSupporter {
 
         // then
         result.andExpect(status().isOk());
+    }
+
+    @DisplayName("게시글 목록 조회")
+    @Test
+    void getPostsByCategory() throws Exception {
+        // given
+        String categoryName = "lol";
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("cat", categoryName)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(10))
+        ;
+    }
+
+    @DisplayName("게시글 목록 조회 - 검색어 포함, 제목으로 검색")
+    @Test
+    void getPostsByCategoryWithTitleSearch() throws Exception {
+        // given
+        String categoryName = "lol";
+        String keyword = "title1";
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("cat", categoryName)
+                .param("searchTarget", "TITLE")
+                .param("searchKeyword", keyword)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(2))
+        ;
+    }
+
+    @DisplayName("게시글 목록 조회 - 검색어 포함, 내용으로 검색")
+    @Test
+    void getPostsByCategoryWithContentSearch() throws Exception {
+        // given
+        String categoryName = "lol";
+        String keyword = "content1";
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("cat", categoryName)
+                .param("searchTarget", "CONTENT")
+                .param("searchKeyword", keyword)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(2))
+        ;
+    }
+
+    @DisplayName("게시글 목록 조회 - 검색어 포함, 작성자로 검색")
+    @Test
+    void getPostsByCategoryWithAuthorSearch() throws Exception {
+        // given
+        String categoryName = "lol";
+        String keyword = "test1";
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("cat", categoryName)
+                .param("searchTarget", "AUTHOR")
+                .param("searchKeyword", keyword)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(10))
+        ;
+    }
+
+    @DisplayName("게시글 목록 조회 - 검색어 포함, 전체 검색")
+    @Test
+    void getPostsByCategoryWithAllSearch() throws Exception {
+        // given
+        String categoryName = "lol";
+        String keyword = "test1";
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("cat", categoryName)
+                .param("searchTarget", "ALL")
+                .param("searchKeyword", keyword)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(10))
+        ;
     }
 }
