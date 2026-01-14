@@ -20,7 +20,7 @@ public class PageDto<T> {
         this.pageSize = page.getSize();
         this.totalPages = page.getTotalPages();
         this.currentPage = page.getNumber() + 1;
-        this.category = category.getName();
+        this.category = (category != null) ? category.getName() : null;
         this.posts = page.getContent();
     }
 }

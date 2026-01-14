@@ -343,7 +343,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         String nonExistentCategoryName = "nonexistent-category";
 
         // when // then
-        assertThatThrownBy(() -> postService.getPostsByCategory(nonExistentCategoryName, null, null, 1, 20))
+        assertThatThrownBy(() -> postService.getPostsByCategory(nonExistentCategoryName, null, null, 1, 20, null))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.CATEGORY_NOT_FOUND);

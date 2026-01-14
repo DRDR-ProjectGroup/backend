@@ -46,6 +46,8 @@ public class Post extends BaseTime {
 
     private LocalDateTime deletedAt;
 
+    private LocalDateTime popularAt;
+
     @Builder
     private Post(Member member, Category category, String title, String content) {
         this.member = member;
@@ -83,5 +85,19 @@ public class Post extends BaseTime {
 
     public void setDeletedAt() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
+
+    public void setPopularAt() {
+        this.popularAt = LocalDateTime.now();
     }
 }

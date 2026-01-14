@@ -295,4 +295,52 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.totalCount").value(10))
         ;
     }
+
+    @DisplayName("게시글 목록 조회 - 카테고리 인기글")
+    @Test
+    void getPostsByCategoryPopular() throws Exception {
+        // given
+        String categoryName = "lol";
+        for (int i = 0; i < 10; i++) {
+            post.incrementLikeCount();
+        }
+        post.setPopularAt();
+        postRepository.saveAndFlush(post);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("cat", categoryName)
+                .param("sort", "POPULAR")
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(1))
+        ;
+    }
+
+    @DisplayName("게시글 목록 조회 - 전체 인기글")
+    @Test
+    void getPostsByAllPopular() throws Exception {
+        // given
+        for (int i = 0; i < 10; i++) {
+            post.incrementLikeCount();
+        }
+        post.setPopularAt();
+        postRepository.saveAndFlush(post);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts")
+                .param("sort", "POPULAR")
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.totalCount").value(1))
+        ;
+    }
 }
