@@ -14,6 +14,7 @@ import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.domain.post.storage.MediaStorage;
 import com.dorandoran.domain.post.storage.StoredMedia;
 import com.dorandoran.domain.post.type.MediaType;
+import com.dorandoran.domain.post.type.PostSortType;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
@@ -40,6 +41,8 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
     private final RedisRepository redisRepository;
+
+    private static final int POST_POPULAR_LIKE_COUNT = 10;
 
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
@@ -137,38 +140,22 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<PostListResponse> getPostsByCategory(String categoryName, SearchType searchType, String keyword, int page, int size) {
-        Category category = categoryRepository.findByAddress(categoryName)
-                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+    public PageDto<PostListResponse> getPostsByCategory(String categoryName, SearchType searchType, String keyword, int page, int size, PostSortType sort) {
+        Category category = null;
 
-        if (page <= 0) page = 1;
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.desc("createdAt")));
-
-        Page<Post> postsPage;
-
-        // 검색어가 비어있다면 전체 조회
-        if (keyword == null || keyword.isBlank()) {
-            postsPage = postRepository.findByCategoryAndDeletedAtIsNull(category, pageable);
-        } else {
-            // 검색 타입에 따라 분기
-            switch (searchType == null ? SearchType.ALL : searchType) {
-                case TITLE:
-                    postsPage = postRepository.findByCategoryAndTitleContainingAndDeletedAtIsNull(category, keyword, pageable);
-                    break;
-                case CONTENT:
-                    postsPage = postRepository.findByCategoryAndContentContainingAndDeletedAtIsNull(category, keyword, pageable);
-                    break;
-                case AUTHOR:
-                    postsPage = postRepository.findByCategoryAndMember_NicknameContainingAndDeletedAtIsNull(category, keyword, pageable);
-                    break;
-                case ALL:
-                default:
-                    postsPage = postRepository.searchAllInCategory(category, keyword, pageable);
-                    break;
-            }
+        if (categoryName != null) {
+            category = categoryRepository.findByAddress(categoryName)
+                    .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
         }
 
-        // 변환
+        Pageable pageable = createPageable(page, size, sort);
+
+        Integer minLikeCount = (sort == PostSortType.POPULAR) ? POST_POPULAR_LIKE_COUNT : null;
+        String effectiveSearchType = (searchType != null) ? searchType.toString() : SearchType.ALL.toString();
+        String effectiveKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+
+        Page<Post> postsPage = postRepository.searchByCondition(category, effectiveSearchType, effectiveKeyword, minLikeCount, pageable);
+
         Page<PostListResponse> dtoPage = postsPage.map(PostListResponse::of);
 
         return new PageDto<>(dtoPage, category);
@@ -231,5 +218,20 @@ public class PostService {
             throw new CustomException(ErrorCode.POST_NOT_FOUND);
         }
         return post;
+    }
+
+    // 페이지 처리 및 정렬 조건 생성 메서드
+    private Pageable createPageable(int page, int size, PostSortType sort) {
+        if (page <= 0) page = 1;
+
+        Sort sortCondition = switch (sort) {
+            case POPULAR -> Sort.by(
+                    Sort.Order.desc("popularAt"),
+                    Sort.Order.desc("createdAt")
+            );
+            default -> Sort.by(Sort.Order.desc("createdAt"));
+        };
+
+        return PageRequest.of(page - 1, size, sortCondition);
     }
 }

@@ -4,6 +4,7 @@ import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.service.PostService;
+import com.dorandoran.domain.post.type.PostSortType;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
 import com.dorandoran.standard.page.dto.PageDto;
@@ -77,13 +78,14 @@ public class PostController {
     @GetMapping
     @Operation(summary = "게시글 목록 조회", description = "카테고리별 게시글 목록을 조회합니다.")
     public BaseResponse<PageDto<PostListResponse>> getPostsByCategory(
-            @RequestParam("cat") String categoryName,
+            @RequestParam(value = "cat", required = false) String categoryName,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(value = "searchTarget", required = false) SearchType searchType,
-            @RequestParam(value = "searchKeyword", required = false) String keyword
+            @RequestParam(value = "searchKeyword", required = false) String keyword,
+            @RequestParam(defaultValue = "LATEST", required = false) PostSortType sort
     ) {
-        PageDto<PostListResponse> postsPage = postService.getPostsByCategory(categoryName, searchType, keyword, page, size);
+        PageDto<PostListResponse> postsPage = postService.getPostsByCategory(categoryName, searchType, keyword, page, size, sort);
         return BaseResponse.ok(SuccessCode.POST_LIST_SUCCESS, postsPage);
     }
 }
