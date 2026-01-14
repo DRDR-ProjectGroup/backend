@@ -31,7 +31,6 @@ public class GuestTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 1. 로그인 하지 않은 사용자인지 확인
         String accessToken = FilterUtil.extractAccessToken(request);
-        log.debug("GuestTokenFilter - AccessToken: {}", accessToken);
 
         if (accessToken != null && jwtUtil.isValidAccessToken(accessToken)) {
             filterChain.doFilter(request, response);

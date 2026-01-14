@@ -74,7 +74,7 @@ public class PostController {
         return BaseResponse.ok(SuccessCode.POST_DELETE_SUCCESS);
     }
 
-    @GetMapping("/")
+    @GetMapping
     @Operation(summary = "게시글 목록 조회", description = "카테고리별 게시글 목록을 조회합니다.")
     public BaseResponse<PageDto<PostListResponse>> getPostsByCategory(
             @RequestParam("cat") String categoryName,
