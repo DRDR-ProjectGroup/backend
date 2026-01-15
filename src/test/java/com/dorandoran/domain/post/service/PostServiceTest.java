@@ -5,6 +5,9 @@ import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.entity.PostLike;
+import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Transactional
@@ -347,5 +351,58 @@ class PostServiceTest extends SpringBootTestSupporter {
                 .isInstanceOf(Exception.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.CATEGORY_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 추천 - 처음 추천")
+    @Test
+    void likePost_Success_FirstLike() throws Exception {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+
+        // when
+        postService.likePost(member.getId().toString(), postId, new PostLikeRequest(LikeType.LIKE));
+
+        // then
+        int likeCount = postRepository.findById(postId).get().getLikeCount();
+        assertThat(likeCount).isEqualTo(1);
+        // DB에 추천 레코드가 저장되었는지 확인
+        assertThat(postLikeRepository.findByMemberAndPost(member, postRepository.findById(postId).get())).isPresent();
+    }
+
+    @DisplayName("게시글 추천 - 추천 취소")
+    @Test
+    void likePost_Success_CancelLike() throws Exception {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        // 먼저 추천
+        postService.likePost(member.getId().toString(), postId, new PostLikeRequest(LikeType.LIKE));
+
+        // when: 동일 타입으로 다시 요청 -> 취소
+        postService.likePost(member.getId().toString(), postId, new PostLikeRequest(LikeType.LIKE));
+
+        // then
+        int likeCount = postRepository.findById(postId).get().getLikeCount();
+        assertThat(likeCount).isEqualTo(0);
+        assertThat(postLikeRepository.findByMemberAndPost(member, postRepository.findById(postId).get())).isEmpty();
+    }
+
+    @DisplayName("게시글 추천 - 추천에서 비추천으로 변경")
+    @Test
+    void likePost_Success_ChangeLikeToDislike() throws Exception {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        // 먼저 추천
+        postService.likePost(member.getId().toString(), postId, new PostLikeRequest(LikeType.LIKE));
+
+        // when: 다른 타입으로 변경
+        postService.likePost(member.getId().toString(), postId, new PostLikeRequest(LikeType.DISLIKE));
+
+        // then
+        int likeCount = postRepository.findById(postId).get().getLikeCount();
+        // 기존 1에서 -2 변화 => -1
+        assertThat(likeCount).isEqualTo(-1);
+        // DB에 변경된 likeType이 반영되었는지 확인
+        PostLike like = postLikeRepository.findByMemberAndPost(member, postRepository.findById(postId).get()).orElseThrow();
+        assertThat(like.getLikeType()).isEqualTo(LikeType.DISLIKE);
     }
 }

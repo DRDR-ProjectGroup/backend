@@ -5,9 +5,11 @@ import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.request.PostLikeRequest;
 import com.dorandoran.domain.post.dto.response.PostMediaResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.entity.Post;
+import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.SuccessCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class PostControllerTest extends SpringBootTestSupporter {
 
+    private List<Member> memberList;
     private Member member;
     private List<CategoryGroup> categoryGroups;
     private Category category;
@@ -36,7 +39,8 @@ class PostControllerTest extends SpringBootTestSupporter {
 
     @BeforeEach
     void setUp() {
-        member = memberFactory.saveAndCreateMember(1).getFirst();
+        memberList = memberFactory.saveAndCreateMember(10);
+        member = memberList.getFirst();
         categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
         category = categoryFactory.saveAndCreateCategory("게임", "lol");
         posts = postFactory.saveAndCreatePost(member, category, 10);
@@ -304,7 +308,7 @@ class PostControllerTest extends SpringBootTestSupporter {
         for (int i = 0; i < 10; i++) {
             post.incrementLikeCount();
         }
-        post.setPopularAt();
+        post.setPopularAt(10);
         postRepository.saveAndFlush(post);
 
         // when
@@ -328,7 +332,7 @@ class PostControllerTest extends SpringBootTestSupporter {
         for (int i = 0; i < 10; i++) {
             post.incrementLikeCount();
         }
-        post.setPopularAt();
+        post.setPopularAt(10);
         postRepository.saveAndFlush(post);
 
         // when
@@ -341,6 +345,28 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIST_SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIST_SUCCESS.getHttpStatus().value()))
                 .andExpect(jsonPath("$.data.totalCount").value(1))
+        ;
+    }
+
+    @DisplayName("게시글 추천")
+    @Test
+    void likePost() throws Exception {
+        // given
+        Long postId = post.getId();
+        PostLikeRequest likeRequest = new PostLikeRequest(LikeType.LIKE);
+
+        // when
+        ResultActions result = mockMvc.perform(post("/api/v1/posts/{postId}/like", postId)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsBytes(likeRequest))
+                .with(user(String.valueOf(member.getId())).roles("MEMBER"))
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIKE_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIKE_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.likeCount").value(1))
         ;
     }
 }
