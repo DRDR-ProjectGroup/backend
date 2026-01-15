@@ -369,4 +369,24 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.likeCount").value(1))
         ;
     }
+
+    @DisplayName("게시글 공지 등록")
+    @Test
+    void setPostNotice() throws Exception {
+        // given
+        Long postId = post.getId();
+        member.setRoleAdmin();
+        memberRepository.saveAndFlush(member);
+
+        // when
+        ResultActions result = mockMvc.perform(post("/api/v1/posts/{postId}/notice", postId)
+                .with(user(String.valueOf(member.getId())).roles("ADMIN"))
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_NOTICE_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_NOTICE_SUCCESS.getHttpStatus().value()))
+        ;
+    }
 }

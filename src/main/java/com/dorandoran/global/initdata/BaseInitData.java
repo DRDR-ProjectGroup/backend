@@ -15,6 +15,7 @@ import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -36,6 +37,12 @@ public class BaseInitData {
     private final PostRepository postRepository;
     private final PostMediaRepository postMediaRepository;
 
+    @Value("${custom.admin.username}")
+    private String adminUsername;
+
+    @Value("${custom.admin.password}")
+    private String adminPassword;
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     void init() {
@@ -43,6 +50,7 @@ public class BaseInitData {
         List<CategoryGroup> defaultCategoryGroup = createDefaultCategoryGroup();
         List<Category> defaultCategory = createDefaultCategory();
         createPostAndPostMediaData();
+        createAdminMember();
     }
 
     private List<Member> createMemberData(int count) {
@@ -65,6 +73,22 @@ public class BaseInitData {
         }
 
         return memberList;
+    }
+
+    private void createAdminMember() {
+        if (memberRepository.findByUsername(adminUsername).isPresent()) {
+            return;
+        }
+
+        String username = adminUsername;
+        String password = passwordEncoder.encode(adminPassword);
+        String email = adminUsername + "@naver.com";
+        String nickname = "관리자";
+
+        Member member = Member.createMember(username, password, email, nickname);
+        member.setRoleAdmin();
+
+        memberRepository.save(member);
     }
 
     private List<CategoryGroup> createDefaultCategoryGroup() {

@@ -83,4 +83,8 @@ public class Member extends BaseTime {
     public void modifyPassword(String newPassword) {
         this.password = newPassword;
     }
+
+    public void setRoleAdmin() {
+        this.role = Role.ROLE_ADMIN;
+    }
 }
