@@ -2,14 +2,12 @@ package com.dorandoran.global.initdata;
 
 import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.category.repository.CategoryGroupRepository;
-import com.dorandoran.domain.category.repository.CategoryRepository;
-import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.domain.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,15 +18,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BaseProdInitData {
 
-    private final MemberRepository memberRepository;
-    private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final MemberService memberService;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     void init() {
-        List<CategoryGroup> defaultCategoryGroup = createDefaultCategoryGroup();
+        createDefaultCategoryGroup();
+        memberService.createAdminMember();
     }
 
     private List<CategoryGroup> createDefaultCategoryGroup() {

@@ -72,6 +72,10 @@ custom:
       access-expiration: ${JWT_ACCESS_EXPIRATION}
       refresh-expiration: ${JWT_REFRESH_EXPIRATION}
 
+  admin:
+    username: ${ADMIN_USERNAME}
+    password: ${ADMIN_PASSWORD}
+
 # Swagger 설정
 springdoc:
   default-produces-media-type: application/json;charset=UTF-8

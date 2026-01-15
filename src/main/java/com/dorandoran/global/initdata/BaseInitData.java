@@ -6,6 +6,7 @@ import com.dorandoran.domain.category.repository.CategoryGroupRepository;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostMedia;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
@@ -35,14 +36,16 @@ public class BaseInitData {
     private final PasswordEncoder passwordEncoder;
     private final PostRepository postRepository;
     private final PostMediaRepository postMediaRepository;
+    private final MemberService memberService;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     void init() {
-        List<Member> savedMemberData = createMemberData(3);
-        List<CategoryGroup> defaultCategoryGroup = createDefaultCategoryGroup();
-        List<Category> defaultCategory = createDefaultCategory();
+        createMemberData(3);
+        createDefaultCategoryGroup();
+        createDefaultCategory();
         createPostAndPostMediaData();
+        memberService.createAdminMember();
     }
 
     private List<Member> createMemberData(int count) {

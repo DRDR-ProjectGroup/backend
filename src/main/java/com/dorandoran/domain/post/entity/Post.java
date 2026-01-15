@@ -90,16 +90,6 @@ public class Post extends BaseTime {
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (this.likeCount > 0) {
-            this.likeCount--;
-        }
-    }
-
     public void setPopularAt(int threshold) {
         if (this.getLikeCount() >= threshold && this.getPopularAt() == null) {
             this.popularAt = LocalDateTime.now();
@@ -108,5 +98,9 @@ public class Post extends BaseTime {
 
     public void changeLikeCount(int delta) {
         this.likeCount += delta;
+    }
+
+    public void changeNoticeStatus(boolean isNotice) {
+        this.isNotice = isNotice;
     }
 }

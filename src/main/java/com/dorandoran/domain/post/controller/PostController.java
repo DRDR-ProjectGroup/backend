@@ -104,4 +104,15 @@ public class PostController {
         PostLikeResponse response = postService.likePost(principal.getName(), postId, request);
         return BaseResponse.ok(SuccessCode.POST_LIKE_SUCCESS, response);
     }
+
+    @PostMapping("/{postId}/notice")
+    @Operation(summary = "게시글 공지 설정/해제", description = "관리자가 ID에 해당하는 게시글을 공지로 설정하거나 해제합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> setPostNotice(
+            @PathVariable Long postId,
+            Principal principal
+    ) {
+        postService.setPostNotice(principal.getName(), postId);
+        return BaseResponse.ok(SuccessCode.POST_NOTICE_SUCCESS);
+    }
 }

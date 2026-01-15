@@ -405,4 +405,18 @@ class PostServiceTest extends SpringBootTestSupporter {
         PostLike like = postLikeRepository.findByMemberAndPost(member, postRepository.findById(postId).get()).orElseThrow();
         assertThat(like.getLikeType()).isEqualTo(LikeType.DISLIKE);
     }
+
+    @DisplayName("게시글 공지 실패 - 관리자 권한 없음")
+    @Test
+    void setPostNotice_Fail_NoAdminRights() {
+        // given
+        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        String memberId = member.getId().toString();
+
+        // when // then
+        assertThatThrownBy(() -> postService.setPostNotice(memberId, postId))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.FORBIDDEN);
+    }
 }

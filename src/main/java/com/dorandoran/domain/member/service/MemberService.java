@@ -14,6 +14,7 @@ import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.security.auth.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -250,5 +251,30 @@ public class MemberService {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
         memberRepository.deleteAllByStatusDeletedAndBefore(MemberStatus.DELETED, threshold);
+    }
+
+
+    // 관리자 계정 생성
+    @Value("${custom.admin.username}")
+    private String adminUsername;
+
+    @Value("${custom.admin.password}")
+    private String adminPassword;
+
+    @Transactional
+    public void createAdminMember() {
+        if (memberRepository.findByUsername(adminUsername).isPresent()) {
+            return;
+        }
+
+        String username = adminUsername;
+        String password = passwordEncoder.encode(adminPassword);
+        String email = adminUsername + "@naver.com";
+        String nickname = "관리자";
+
+        Member member = Member.createMember(username, password, email, nickname);
+        member.setRoleAdmin();
+
+        memberRepository.save(member);
     }
 }

@@ -4,6 +4,7 @@ import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
 import com.dorandoran.domain.post.dto.response.PostLikeResponse;
@@ -204,6 +205,22 @@ public class PostService {
         post.setPopularAt(POST_POPULAR_LIKE_COUNT);
 
         return PostLikeResponse.of(post);
+    }
+
+    @Transactional
+    public void setPostNotice(String memberId, Long postId) {
+        Member member = findMemberByStringId(memberId);
+
+        // 관리자 권한 확인
+        if (!member.getRole().equals(Role.ROLE_ADMIN)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        Post post = findPostById(postId);
+
+        boolean notice = post.isNotice();
+
+        post.changeNoticeStatus(!notice);
     }
 
     // 파일 타입 확인 메서드
