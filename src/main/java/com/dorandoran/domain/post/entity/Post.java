@@ -103,9 +103,4 @@ public class Post extends BaseTime {
     public void changeNoticeStatus(boolean isNotice) {
         this.isNotice = isNotice;
     }
-
-    // Test용 메서드
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
 }

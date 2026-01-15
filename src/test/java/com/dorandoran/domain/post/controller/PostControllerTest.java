@@ -305,9 +305,7 @@ class PostControllerTest extends SpringBootTestSupporter {
     void getPostsByCategoryPopular() throws Exception {
         // given
         String categoryName = "lol";
-        for (int i = 0; i < 10; i++) {
-            post.incrementLikeCount();
-        }
+        post.changeLikeCount(10);
         post.setPopularAt(10);
         postRepository.saveAndFlush(post);
 
@@ -329,9 +327,7 @@ class PostControllerTest extends SpringBootTestSupporter {
     @Test
     void getPostsByAllPopular() throws Exception {
         // given
-        for (int i = 0; i < 10; i++) {
-            post.incrementLikeCount();
-        }
+        post.changeLikeCount(10);
         post.setPopularAt(10);
         postRepository.saveAndFlush(post);
 
