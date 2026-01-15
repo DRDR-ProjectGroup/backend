@@ -18,6 +18,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Post extends BaseTime {
 
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn()
     private Member member;
@@ -97,7 +100,13 @@ public class Post extends BaseTime {
         }
     }
 
-    public void setPopularAt() {
-        this.popularAt = LocalDateTime.now();
+    public void setPopularAt(int threshold) {
+        if (this.getLikeCount() >= threshold && this.getPopularAt() == null) {
+            this.popularAt = LocalDateTime.now();
+        }
+    }
+
+    public void changeLikeCount(int delta) {
+        this.likeCount += delta;
     }
 }

@@ -1,6 +1,8 @@
 package com.dorandoran.domain.post.controller;
 
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.dto.response.PostLikeResponse;
 import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.service.PostService;
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
 @Tag(name = "PostController", description = "게시글 관련 API")
+@Slf4j
 public class PostController {
 
     private final PostService postService;
@@ -87,5 +91,17 @@ public class PostController {
     ) {
         PageDto<PostListResponse> postsPage = postService.getPostsByCategory(categoryName, searchType, keyword, page, size, sort);
         return BaseResponse.ok(SuccessCode.POST_LIST_SUCCESS, postsPage);
+    }
+
+    @PostMapping("/{postId}/like")
+    @Operation(summary = "게시글 추천, 비추천", description = "ID에 해당하는 게시글을 추천/비추천합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<PostLikeResponse> likePost(
+            @PathVariable Long postId,
+            @RequestBody PostLikeRequest request,
+            Principal principal
+    ) {
+        PostLikeResponse response = postService.likePost(principal.getName(), postId, request);
+        return BaseResponse.ok(SuccessCode.POST_LIKE_SUCCESS, response);
     }
 }

@@ -5,14 +5,19 @@ import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
+import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.dto.response.PostLikeResponse;
 import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.domain.post.dto.response.PostMediaResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.entity.Post;
+import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
+import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.domain.post.storage.MediaStorage;
 import com.dorandoran.domain.post.storage.StoredMedia;
+import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.domain.post.type.PostSortType;
 import com.dorandoran.global.exception.CustomException;
@@ -31,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +47,7 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
     private final RedisRepository redisRepository;
+    private final PostLikeRepository postLikeRepository;
 
     private static final int POST_POPULAR_LIKE_COUNT = 10;
 
@@ -159,6 +166,44 @@ public class PostService {
         Page<PostListResponse> dtoPage = postsPage.map(PostListResponse::of);
 
         return new PageDto<>(dtoPage, category);
+    }
+
+    @Transactional
+    public PostLikeResponse likePost(String memberId, Long postId, PostLikeRequest request) {
+        // 회원 조회
+        Member member = findMemberByStringId(memberId);
+
+        // 게시글 조회
+        Post post = findPostById(postId);
+
+        // 추천 로직 구현
+        Optional<PostLike> existPostLike = postLikeRepository.findByMemberAndPost(member, post);
+
+        PostLike postLike;
+
+        if (existPostLike.isEmpty()) {
+            // 새로운 추천 생성
+            postLikeRepository.save(PostLike.of(member, post, request.getLikeType()));
+            // likeCount 증가 또는 감소
+            post.changeLikeCount(request.getLikeType() == LikeType.LIKE ? +1 : -1);
+
+        } else if (existPostLike.get().getLikeType() == request.getLikeType()) {
+            // 동일한 추천 타입이면 취소 처리
+            postLikeRepository.delete(existPostLike.get());
+            // likeCount 증가 또는 감소
+            post.changeLikeCount(request.getLikeType() == LikeType.LIKE ? -1 : +1);
+
+        } else {
+            // 다른 추천 타입이면 변경 처리
+            existPostLike.get().changeLikeType(request.getLikeType());
+            // likeCount 증가 또는 감소
+            post.changeLikeCount(request.getLikeType() == LikeType.LIKE ? +2 : -2);
+        }
+
+        // 추천수가 10이상이 되는 순간 popularAt 설정
+        post.setPopularAt(POST_POPULAR_LIKE_COUNT);
+
+        return PostLikeResponse.of(post);
     }
 
     // 파일 타입 확인 메서드

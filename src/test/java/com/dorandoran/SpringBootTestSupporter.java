@@ -3,6 +3,7 @@ package com.dorandoran;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.member.service.EmailService;
 import com.dorandoran.domain.member.service.MemberService;
+import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.domain.post.service.PostService;
@@ -75,6 +76,9 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     protected PostMediaRepository postMediaRepository;
+
+    @Autowired
+    protected PostLikeRepository postLikeRepository;
 
     /**
      * Common
