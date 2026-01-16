@@ -283,7 +283,7 @@ public class PostService {
     }
 
     // 페이지 처리 및 정렬 조건 생성 메서드
-    private Pageable createPageable(int page, int size, PostSortType sort) {
+    public Pageable createPageable(int page, int size, PostSortType sort) {
         if (page <= 0) page = 1;
 
         Sort sortCondition = switch (sort) {
