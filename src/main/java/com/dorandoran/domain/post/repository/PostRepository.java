@@ -1,6 +1,7 @@
 package com.dorandoran.domain.post.repository;
 
 import com.dorandoran.domain.category.entity.Category;
+import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,4 +41,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("minLikeCount") Integer minLikeCount,
             Pageable pageable
     );
+
+    @Query("SELECT p FROM Post p WHERE p.member = :findMember AND p.deletedAt IS NULL")
+    Page<Post> findAllByMember(Member findMember, Pageable pageable);
 }

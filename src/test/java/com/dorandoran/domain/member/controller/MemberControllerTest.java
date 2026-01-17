@@ -250,4 +250,38 @@ class MemberControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.message").value(PASSWORD_MODIFY_SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.code").value(PASSWORD_MODIFY_SUCCESS.getHttpStatus().value()));
     }
+
+    @DisplayName("마이페이지 - 내가 쓴 글 조회")
+    @Test
+    void getMyPosts() throws Exception {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/members/me/posts")
+                        .with(user(String.valueOf(member.getId())).roles("MEMBER")))
+                .andDo(print());
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(MY_POSTS_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(MY_POSTS_SUCCESS.getHttpStatus().value()));
+    }
+
+    @DisplayName("마이페이지 - 내가 쓴 댓글 조회")
+    @Test
+    void getMyComments() throws Exception {
+        // given
+        Member member = memberFactory.saveAndCreateMember(1).getFirst();
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/members/me/comments")
+                        .with(user(String.valueOf(member.getId())).roles("MEMBER")))
+                .andDo(print());
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(MY_COMMENTS_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(MY_COMMENTS_SUCCESS.getHttpStatus().value()));
+    }
 }

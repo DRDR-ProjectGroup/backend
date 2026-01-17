@@ -1,20 +1,30 @@
 package com.dorandoran.domain.member.service;
 
+import com.dorandoran.domain.comment.dto.response.CommentListMemberResponse;
+import com.dorandoran.domain.comment.repository.CommentRepository;
 import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.member.type.MemberStatus;
+import com.dorandoran.domain.post.dto.response.PostListResponse;
+import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.jwt.JWTUtil;
 import com.dorandoran.global.jwt.JwtProperties;
 import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.security.auth.CustomUserDetails;
+import com.dorandoran.standard.page.dto.PageCommentDto;
+import com.dorandoran.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,6 +50,8 @@ public class MemberService {
     private final RedisRepository redisRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public void join(JoinRequest joinDto) {
@@ -276,5 +288,35 @@ public class MemberService {
         member.setRoleAdmin();
 
         memberRepository.save(member);
+    }
+
+    public PageDto<PostListResponse> getMyPosts(String memberId, int page, int size) {
+        long id = Long.parseLong(memberId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<PostListResponse> postListResponses = postRepository.findAllByMember(findMember, pageable).map(PostListResponse::of);
+
+        return new PageDto<>(postListResponses, null);
+    }
+
+    public PageCommentDto<CommentListMemberResponse> getMyComments(String memberId, int page, int size) {
+        long id = Long.parseLong(memberId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<CommentListMemberResponse> commentPage = commentRepository.findAllByMember(findMember, pageable).map(CommentListMemberResponse::of);
+
+        return new PageCommentDto<>(commentPage);
+    }
+
+    public Member findMemberByStringId(String memberId) {
+        Long parsedId = Long.valueOf(memberId);
+        return memberRepository.findById(parsedId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

@@ -16,6 +16,8 @@ public enum SuccessCode {
     MEMBER_INFO_SUCCESS(HttpStatus.OK, "회원 정보 조회 성공"),
     NICKNAME_MODIFY_SUCCESS(HttpStatus.OK, "닉네임 수정 성공"),
     PASSWORD_MODIFY_SUCCESS(HttpStatus.OK, "비밀번호 수정 성공"),
+    MY_POSTS_SUCCESS(HttpStatus.OK, "내 게시글 목록 조회 성공"),
+    MY_COMMENTS_SUCCESS(HttpStatus.OK, "내 댓글 목록 조회 성공"),
 
     // JWT
     TOKEN_REISSUE_SUCCESS(HttpStatus.OK, "토큰 재발급 성공"),
@@ -33,6 +35,12 @@ public enum SuccessCode {
     POST_LIKE_SUCCESS(HttpStatus.OK, "게시글 추천 성공"),
     POST_UNLIKE_SUCCESS(HttpStatus.OK, "게시글 비추천 성공"),
     POST_NOTICE_SUCCESS(HttpStatus.OK, "공지글 설정 변경 성공"),
+
+    // Comment
+    COMMENT_CREATE_SUCCESS(HttpStatus.CREATED, "댓글 생성 성공"),
+    COMMENT_LIST_READ_SUCCESS(HttpStatus.OK, "댓글 목록 조회 성공"),
+    COMMENT_MODIFY_SUCCESS(HttpStatus.OK, "댓글 수정 성공"),
+    COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제 성공"),
 
     // Common
     SUCCESS(HttpStatus.OK, "요청 응답 성공"),

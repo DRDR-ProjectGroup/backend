@@ -3,7 +3,7 @@ package com.dorandoran.domain.post.service;
 import com.dorandoran.domain.category.entity.Category;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
-import com.dorandoran.domain.member.repository.MemberRepository;
+import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
@@ -44,7 +44,7 @@ import java.util.Optional;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
     private final RedisRepository redisRepository;
@@ -55,7 +55,7 @@ public class PostService {
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
         // 회원 조회
-        Member member = findMemberByStringId(memberId);
+        Member member = memberService.findMemberByStringId(memberId);
 
         // 카테고리 조회
         Category category = categoryRepository.findByAddress(categoryName)
@@ -102,7 +102,7 @@ public class PostService {
     @Transactional
     public PostResponse modifyPost(String memberId, Long postId, PostCreateRequest dto, List<MultipartFile> files) throws IOException {
         // 회원 조회
-        Member member = findMemberByStringId(memberId);
+        Member member = memberService.findMemberByStringId(memberId);
 
         // 게시글 조회
         Post post = findPostById(postId);
@@ -134,7 +134,7 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId, String memberId) {
         // 회원 조회
-        Member member = findMemberByStringId(memberId);
+        Member member = memberService.findMemberByStringId(memberId);
 
         // 게시글 조회
         Post post = findPostById(postId);
@@ -172,7 +172,7 @@ public class PostService {
     @Transactional
     public PostLikeResponse likePost(String memberId, Long postId, PostLikeRequest request) {
         // 회원 조회
-        Member member = findMemberByStringId(memberId);
+        Member member = memberService.findMemberByStringId(memberId);
 
         // 게시글 조회
         Post post = findPostById(postId);
@@ -209,7 +209,7 @@ public class PostService {
 
     @Transactional
     public void setPostNotice(String memberId, Long postId) {
-        Member member = findMemberByStringId(memberId);
+        Member member = memberService.findMemberByStringId(memberId);
 
         // 관리자 권한 확인
         if (!member.getRole().equals(Role.ROLE_ADMIN)) {
@@ -267,13 +267,7 @@ public class PostService {
         }
     }
 
-    private Member findMemberByStringId(String memberId) {
-        Long parsedId = Long.valueOf(memberId);
-        return memberRepository.findById(parsedId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-    }
-
-    private Post findPostById(Long postId) {
+    public Post findPostById(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         if (post.getDeletedAt() != null) {
@@ -283,7 +277,7 @@ public class PostService {
     }
 
     // 페이지 처리 및 정렬 조건 생성 메서드
-    private Pageable createPageable(int page, int size, PostSortType sort) {
+    public Pageable createPageable(int page, int size, PostSortType sort) {
         if (page <= 0) page = 1;
 
         Sort sortCondition = switch (sort) {
@@ -294,6 +288,6 @@ public class PostService {
             default -> Sort.by(Sort.Order.desc("createdAt"));
         };
 
-        return PageRequest.of(page - 1, size, sortCondition);
+        return PageRequest.of(Math.max(0, page - 1), size, sortCondition);
     }
 }

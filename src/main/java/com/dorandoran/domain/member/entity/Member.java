@@ -1,5 +1,6 @@
 package com.dorandoran.domain.member.entity;
 
+import com.dorandoran.domain.comment.entity.Comment;
 import com.dorandoran.domain.member.type.MemberStatus;
 import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.entity.Post;
@@ -46,6 +47,9 @@ public class Member extends BaseTime {
 
     @OneToMany(mappedBy = "member")
     private List<Post> posts;
+
+    @OneToMany(mappedBy = "member")
+    private List<Comment> comments;
 
     private LocalDateTime deletedAt;
 
