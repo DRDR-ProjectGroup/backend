@@ -1,5 +1,7 @@
 package com.dorandoran;
 
+import com.dorandoran.domain.comment.repository.CommentRepository;
+import com.dorandoran.domain.comment.service.CommentService;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.member.service.EmailService;
 import com.dorandoran.domain.member.service.MemberService;
@@ -7,10 +9,7 @@ import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.domain.post.service.PostService;
-import com.dorandoran.factory.CategoryFactory;
-import com.dorandoran.factory.CategoryGroupFactory;
-import com.dorandoran.factory.MemberFactory;
-import com.dorandoran.factory.PostFactory;
+import com.dorandoran.factory.*;
 import com.dorandoran.global.jwt.JWTUtil;
 import com.dorandoran.global.jwt.JwtProperties;
 import com.dorandoran.global.redis.RedisRepository;
@@ -44,6 +43,9 @@ public abstract class SpringBootTestSupporter {
     @Autowired
     public PostFactory postFactory;
 
+    @Autowired
+    public CommentFactory commentFactory;
+
     /**
      * mock Mvc
      */
@@ -62,6 +64,9 @@ public abstract class SpringBootTestSupporter {
     @Autowired
     protected PostService postService;
 
+    @Autowired
+    protected CommentService commentService;
+
     /**
      * repository
      */
@@ -79,6 +84,9 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     protected PostLikeRepository postLikeRepository;
+
+    @Autowired
+    protected CommentRepository commentRepository;
 
     /**
      * Common
