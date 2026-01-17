@@ -5,6 +5,8 @@ import com.dorandoran.domain.comment.service.CommentService;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.member.service.EmailService;
 import com.dorandoran.domain.member.service.MemberService;
+import com.dorandoran.domain.message.repository.MessageRepository;
+import com.dorandoran.domain.message.service.MessageService;
 import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
@@ -46,6 +48,9 @@ public abstract class SpringBootTestSupporter {
     @Autowired
     public CommentFactory commentFactory;
 
+    @Autowired
+    public MessageFactory messageFactory;
+
     /**
      * mock Mvc
      */
@@ -67,6 +72,9 @@ public abstract class SpringBootTestSupporter {
     @Autowired
     protected CommentService commentService;
 
+    @Autowired
+    protected MessageService messageService;
+
     /**
      * repository
      */
@@ -87,6 +95,9 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     protected CommentRepository commentRepository;
+
+    @Autowired
+    protected MessageRepository messageRepository;
 
     /**
      * Common

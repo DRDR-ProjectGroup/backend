@@ -43,6 +43,12 @@ public enum ErrorCode {
     // Comment 오류
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
 
+    // Message 오류
+    CANNOT_SEND_MESSAGE_TO_SELF(HttpStatus.BAD_REQUEST, "자기 자신에게는 메세지를 보낼 수 없습니다."),
+    MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 메세지입니다."),
+    NO_ACCESS_TO_MESSAGE(HttpStatus.FORBIDDEN, "해당 메세지에 접근할 수 있는 권한이 없습니다."),
+    INVALID_MESSAGE_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 메세지 타입입니다."),
+
     // Common 오류,
     VALIDATION_FAIL_ERROR(HttpStatus.BAD_REQUEST, "(exception error 메세지에 따름)"),
     NOT_SUPPORTED_METHOD(HttpStatus.METHOD_NOT_ALLOWED, "(exception error 메세지에 따름"),
