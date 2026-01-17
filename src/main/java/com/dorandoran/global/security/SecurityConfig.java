@@ -104,8 +104,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/posts/**").authenticated()
 
                         // comment domain
-                        .requestMatchers(GET, "/api/v1/comments/**", "/api/v1/comments").permitAll()
-                        .requestMatchers("/api/v1/comments/**").authenticated()
+                        .requestMatchers(GET, "/api/v1/posts/*/comments/**", "/api/v1/posts/*/comments").permitAll()
+                        .requestMatchers("/api/v1/posts/*/comments/**").authenticated()
 
                         // message domain
                         .requestMatchers("/api/v1/messages/**").authenticated()

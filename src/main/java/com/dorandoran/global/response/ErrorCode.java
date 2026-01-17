@@ -40,6 +40,9 @@ public enum ErrorCode {
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
     UNAUTHORIZED_POST_MODIFICATION(HttpStatus.UNAUTHORIZED, "게시글 수정/삭제 권한이 없습니다."),
 
+    // Comment 오류
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
+
     // Common 오류,
     VALIDATION_FAIL_ERROR(HttpStatus.BAD_REQUEST, "(exception error 메세지에 따름)"),
     NOT_SUPPORTED_METHOD(HttpStatus.METHOD_NOT_ALLOWED, "(exception error 메세지에 따름"),

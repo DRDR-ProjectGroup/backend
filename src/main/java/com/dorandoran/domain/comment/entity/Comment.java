@@ -55,6 +55,10 @@ public class Comment extends BaseTime {
                 .build();
     }
 
+    public void modifyContent(String content) {
+        this.content = content;
+    }
+
     public void delete() {
         this.deletedAt = LocalDateTime.now();
     }

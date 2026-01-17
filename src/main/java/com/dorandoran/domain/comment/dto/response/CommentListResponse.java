@@ -6,20 +6,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CommentListResponse {
-    private String postId;
+    private Long commentId;
+    private String author;
     private String content;
     private String createdAt;
+    private List<CommentListResponse> child;
 
-    public static CommentListResponse of(Comment comment) {
+    public static CommentListResponse of(Comment comment, List<CommentListResponse> childComments) {
+        boolean deleted = comment.getDeletedAt() != null;
         return CommentListResponse.builder()
-                .postId(comment.getPost().getId().toString())
-                .content(comment.getContent())
+                .commentId(comment.getId())
+                .author(comment.getMember().getUsername())
+                .content(deleted ? "삭제된 댓글입니다." : comment.getContent())
                 .createdAt(comment.getCreatedAt().toString())
+                .child(childComments)
                 .build();
     }
 }

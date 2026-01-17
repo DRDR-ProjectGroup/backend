@@ -36,6 +36,12 @@ public enum SuccessCode {
     POST_UNLIKE_SUCCESS(HttpStatus.OK, "게시글 비추천 성공"),
     POST_NOTICE_SUCCESS(HttpStatus.OK, "공지글 설정 변경 성공"),
 
+    // Comment
+    COMMENT_CREATE_SUCCESS(HttpStatus.CREATED, "댓글 생성 성공"),
+    COMMENT_LIST_READ_SUCCESS(HttpStatus.OK, "댓글 목록 조회 성공"),
+    COMMENT_MODIFY_SUCCESS(HttpStatus.OK, "댓글 수정 성공"),
+    COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제 성공"),
+
     // Common
     SUCCESS(HttpStatus.OK, "요청 응답 성공"),
     ;

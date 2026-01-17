@@ -1,6 +1,6 @@
 package com.dorandoran.domain.member.service;
 
-import com.dorandoran.domain.comment.dto.response.CommentListResponse;
+import com.dorandoran.domain.comment.dto.response.CommentListMemberResponse;
 import com.dorandoran.domain.comment.repository.CommentRepository;
 import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
@@ -16,6 +16,7 @@ import com.dorandoran.global.jwt.JwtProperties;
 import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.security.auth.CustomUserDetails;
+import com.dorandoran.standard.page.dto.PageCommentDto;
 import com.dorandoran.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -294,22 +295,28 @@ public class MemberService {
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.desc("createdAt")));
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
         Page<PostListResponse> postListResponses = postRepository.findAllByMember(findMember, pageable).map(PostListResponse::of);
 
         return new PageDto<>(postListResponses, null);
     }
 
-    public PageDto<CommentListResponse> getMyComments(String memberId, int page, int size) {
+    public PageCommentDto<CommentListMemberResponse> getMyComments(String memberId, int page, int size) {
         long id = Long.parseLong(memberId);
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.desc("createdAt")));
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
-        Page<CommentListResponse> commentPage = commentRepository.findAllByMember(findMember, pageable).map(CommentListResponse::of);
+        Page<CommentListMemberResponse> commentPage = commentRepository.findAllByMember(findMember, pageable).map(CommentListMemberResponse::of);
 
-        return new PageDto<>(commentPage, null);
+        return new PageCommentDto<>(commentPage);
+    }
+
+    public Member findMemberByStringId(String memberId) {
+        Long parsedId = Long.valueOf(memberId);
+        return memberRepository.findById(parsedId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

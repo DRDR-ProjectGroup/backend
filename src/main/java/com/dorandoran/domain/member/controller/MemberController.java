@@ -1,6 +1,6 @@
 package com.dorandoran.domain.member.controller;
 
-import com.dorandoran.domain.comment.dto.response.CommentListResponse;
+import com.dorandoran.domain.comment.dto.response.CommentListMemberResponse;
 import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
@@ -9,6 +9,7 @@ import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.global.jwt.JwtProperties;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
+import com.dorandoran.standard.page.dto.PageCommentDto;
 import com.dorandoran.standard.page.dto.PageDto;
 import com.dorandoran.standard.util.ControllerUt;
 import io.swagger.v3.oas.annotations.Operation;
@@ -170,12 +171,12 @@ public class MemberController {
     @GetMapping("/me/comments")
     @Operation(summary = "내가 작성한 댓글 조회")
     @SecurityRequirement(name = "bearerAuth")
-    public BaseResponse<PageDto<CommentListResponse>> getMyComments(
+    public BaseResponse<PageCommentDto<CommentListMemberResponse>> getMyComments(
             Principal principal,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        PageDto<CommentListResponse> myComments = memberService.getMyComments(principal.getName(), page, size);
+        PageCommentDto<CommentListMemberResponse> myComments = memberService.getMyComments(principal.getName(), page, size);
         return BaseResponse.ok(SuccessCode.MY_COMMENTS_SUCCESS, myComments);
     }
 
