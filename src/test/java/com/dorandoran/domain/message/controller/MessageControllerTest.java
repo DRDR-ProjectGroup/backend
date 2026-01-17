@@ -128,7 +128,7 @@ class MessageControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.message").value(SuccessCode.MESSAGE_DELETE_SUCCESS.getMessage()));
     }
 
-    @DisplayName("메세지 삭제 테스트 - 보낸편지")
+    @DisplayName("메세지 삭제 테스트 - 받은편지")
     @Test
     void deleteReceiveMessage() throws Exception {
         // given

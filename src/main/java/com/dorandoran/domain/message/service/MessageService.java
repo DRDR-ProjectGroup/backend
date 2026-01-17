@@ -26,7 +26,7 @@ public class MessageService {
 
     @Transactional
     public void sendMessage(Long receiverId, String senderId, MessageSendRequest request) {
-        Member receiver = memberService.findMemberByStringId(receiverId.toString());
+        Member receiver = memberService.findMemberById(receiverId);
         Member sender = memberService.findMemberByStringId(senderId);
 
         if (sender.getId().equals(receiver.getId())) {
@@ -48,7 +48,8 @@ public class MessageService {
             throw new CustomException(ErrorCode.NO_ACCESS_TO_MESSAGE);
         }
 
-        if (message.getSenderDeletedAt() != null || message.getReceiverDeletedAt() != null) {
+        if ((message.getSender().getId().equals(member.getId()) && message.getSenderDeletedAt() != null) ||
+                (message.getReceiver().getId().equals(member.getId()) && message.getReceiverDeletedAt() != null)) {
             throw new CustomException(ErrorCode.MESSAGE_NOT_FOUND);
         }
 
