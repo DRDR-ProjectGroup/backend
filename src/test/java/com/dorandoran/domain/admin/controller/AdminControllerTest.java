@@ -79,6 +79,25 @@ class AdminControllerTest extends SpringBootTestSupporter {
         result.andExpect(status().isForbidden());
     }
 
+    @DisplayName("그룹 생상 - 중복 이름으로 인한 실패")
+    @Test
+    void createCategoryGroup_Fail_DuplicateName() throws Exception {
+        // given
+        CategoryGroup existingGroup = categoryGroups.getFirst();
+        CategoryGroupRequest request = new CategoryGroupRequest(existingGroup.getName());
+
+        // when
+        ResultActions result = mockMvc.perform(post("/api/v1/admin/groups")
+                .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_GROUP_DUPLICATE_NAME.getMessage()));
+    }
+
     @DisplayName("그룹 수정")
     @Test
     void modifyCategoryGroup() throws Exception {
@@ -116,6 +135,26 @@ class AdminControllerTest extends SpringBootTestSupporter {
 
         // then
         result.andExpect(status().isForbidden());
+    }
+
+    @DisplayName("그룹 수정 - 중복 이름으로 인한 실패")
+    @Test
+    void modifyCategoryGroup_Fail_DuplicateName() throws Exception {
+        // given
+        CategoryGroup categoryGroup = categoryGroups.getFirst();
+        CategoryGroup anotherGroup = categoryGroups.getLast();
+        CategoryGroupRequest request = new CategoryGroupRequest(anotherGroup.getName());
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/v1/admin/groups/" + categoryGroup.getId())
+                .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_GROUP_DUPLICATE_NAME.getMessage()));
     }
 
     @DisplayName("그룹 삭제")
@@ -203,6 +242,24 @@ class AdminControllerTest extends SpringBootTestSupporter {
         result.andExpect(status().isForbidden());
     }
 
+    @DisplayName("카테고리 생성 - 중복 이름/주소로 인한 실패")
+    @Test
+    void createCategory_Fail_DuplicateNameOrAddress() throws Exception {
+        // given
+        CategoryRequest request = new CategoryRequest(categoryGroups.getFirst().getId(), category.getName(), category.getAddress());
+
+        // when
+        ResultActions result = mockMvc.perform(post("/api/v1/admin/categories")
+                .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_DUPLICATE.getMessage()));
+    }
+
     @DisplayName("카테고리 수정")
     @Test
     void modifyCategory() throws Exception {
@@ -237,6 +294,24 @@ class AdminControllerTest extends SpringBootTestSupporter {
 
         // then
         result.andExpect(status().isForbidden());
+    }
+
+    @DisplayName("카테고리 수정 - 중복 이름/주소로 인한 실패")
+    @Test
+    void modifyCategory_Fail_DuplicateNameOrAddress() throws Exception {
+        // given
+        CategoryRequest request = new CategoryRequest(categoryGroups.getFirst().getId(), category.getName(), category.getAddress());
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/v1/admin/categories/" + category.getId())
+                .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_DUPLICATE.getMessage()));
     }
 
     @DisplayName("카테고리 삭제")

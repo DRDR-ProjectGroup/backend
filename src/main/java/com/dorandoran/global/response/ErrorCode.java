@@ -53,6 +53,8 @@ public enum ErrorCode {
     INVALID_MESSAGE_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 메세지 타입입니다."),
 
     // Admin 오류
+    CATEGORY_GROUP_DUPLICATE_NAME(HttpStatus.BAD_REQUEST, "중복된 카테고리 그룹명입니다."),
+    CATEGORY_DUPLICATE(HttpStatus.BAD_REQUEST, "중복된 카테고리입니다."),
     CATEGORY_GROUP_DELETE_FAIL_HAS_CATEGORIES(HttpStatus.BAD_REQUEST, "카테고리 그룹에 속한 카테고리가 존재하여 삭제할 수 없습니다."),
     CATEGORY_DELETE_FAIL_HAS_POSTS(HttpStatus.BAD_REQUEST, "카테고리에 속한 게시글이 존재하여 삭제할 수 없습니다."),
     CATEGORY_GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 그룹입니다."),

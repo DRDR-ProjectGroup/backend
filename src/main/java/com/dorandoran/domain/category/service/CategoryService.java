@@ -56,6 +56,10 @@ public class CategoryService {
     public void createCategoryGroup(CategoryGroupRequest request, String memberId) {
         validateAdmin(memberId);
 
+        if (categoryGroupRepository.existsByName(request.getGroupName())) {
+            throw new CustomException(ErrorCode.CATEGORY_GROUP_DUPLICATE_NAME);
+        }
+
         CategoryGroup categoryGroup = CategoryGroup.createCategoryGroup(request.getGroupName());
 
         categoryGroupRepository.save(categoryGroup);
@@ -64,6 +68,10 @@ public class CategoryService {
     @Transactional
     public void modifyCategoryGroup(Long groupId, CategoryGroupRequest request, String memberId) {
         validateAdmin(memberId);
+
+        if (categoryGroupRepository.existsByName(request.getGroupName())) {
+            throw new CustomException(ErrorCode.CATEGORY_GROUP_DUPLICATE_NAME);
+        }
 
         CategoryGroup categoryGroup = categoryGroupRepository.findById(groupId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_GROUP_NOT_FOUND));
@@ -91,6 +99,10 @@ public class CategoryService {
     public void createCategory(CategoryRequest request, String memberId) {
         validateAdmin(memberId);
 
+        if (categoryRepository.existsByName(request.getCategoryName()) || categoryRepository.existsByAddress(request.getCategoryAddress())) {
+            throw new CustomException(ErrorCode.CATEGORY_DUPLICATE);
+        }
+
         CategoryGroup categoryGroup = categoryGroupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_GROUP_NOT_FOUND));
 
@@ -102,6 +114,10 @@ public class CategoryService {
     @Transactional
     public void modifyCategory(Long categoryId, CategoryRequest request, String memberId) {
         validateAdmin(memberId);
+
+        if (categoryRepository.existsByName(request.getCategoryName()) || categoryRepository.existsByAddress(request.getCategoryAddress())) {
+            throw new CustomException(ErrorCode.CATEGORY_DUPLICATE);
+        }
 
         CategoryGroup categoryGroup = categoryGroupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_GROUP_NOT_FOUND));

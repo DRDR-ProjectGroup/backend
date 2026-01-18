@@ -12,4 +12,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findByAddress(String address);
 
     List<Category> findByGroupId(Long groupId);
+
+    boolean existsByName(String categoryName);
+
+    boolean existsByAddress(String categoryAddress);
 }
