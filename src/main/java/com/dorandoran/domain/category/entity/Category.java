@@ -36,4 +36,10 @@ public class Category extends BaseTime {
                 .address(address)
                 .build();
     }
+
+    public void modifyCategory(CategoryGroup group, String name, String address) {
+        this.group = group;
+        this.name = name;
+        this.address = address;
+    }
 }
