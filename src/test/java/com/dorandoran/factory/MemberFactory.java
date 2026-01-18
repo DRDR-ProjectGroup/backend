@@ -48,6 +48,18 @@ public final class MemberFactory {
         return savedUserList;
     }
 
+    public Member saveAndCreateAdminMember() {
+        String username = "admin";
+        String password = passwordEncoder.encode(MEMBER_PW);
+        String email = "admin@naver.com";
+        String nickname = "admin";
+        Member adminMember = Member.createMember(username, password, email, nickname);
+        adminMember.setRoleAdmin();
+        Member savedAdmin = memberRepository.save(adminMember);
+        flushAndClear();
+        return savedAdmin;
+    }
+
     private void flushAndClear() {
         em.flush();
         em.clear();
