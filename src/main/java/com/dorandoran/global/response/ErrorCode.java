@@ -54,6 +54,7 @@ public enum ErrorCode {
 
     // Admin 오류
     CATEGORY_GROUP_DELETE_FAIL_HAS_CATEGORIES(HttpStatus.BAD_REQUEST, "카테고리 그룹에 속한 카테고리가 존재하여 삭제할 수 없습니다."),
+    CATEGORY_DELETE_FAIL_HAS_POSTS(HttpStatus.BAD_REQUEST, "카테고리에 속한 게시글이 존재하여 삭제할 수 없습니다."),
     CATEGORY_GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 그룹입니다."),
     MEMBER_STATUS_SAME(HttpStatus.BAD_REQUEST, "변경하려는 상태가 현재 상태와 동일합니다."),
     ADMIN_CANNOT_DELETE(HttpStatus.BAD_REQUEST, "탈퇴는 시킬 수 없습니다."),

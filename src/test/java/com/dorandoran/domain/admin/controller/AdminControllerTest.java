@@ -8,6 +8,7 @@ import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.dto.request.MemberStatusRequest;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.type.MemberStatus;
+import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.response.SuccessCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,7 @@ class AdminControllerTest extends SpringBootTestSupporter {
     private List<CategoryGroup> categoryGroups;
     private Category category;
     private List<Member> memberList;
+    private List<Post> posts;
 
     @BeforeEach
     void setUp() {
@@ -37,6 +39,7 @@ class AdminControllerTest extends SpringBootTestSupporter {
         categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
         category = categoryFactory.saveAndCreateCategory("게임", "lol");
         memberList = memberFactory.saveAndCreateMember(10);
+        posts = postFactory.saveAndCreatePost(memberList.getFirst(), category, 10);
     }
 
     @DisplayName("그룹 생성")
@@ -264,6 +267,21 @@ class AdminControllerTest extends SpringBootTestSupporter {
 
         // then
         result.andExpect(status().isForbidden());
+    }
+
+    @DisplayName("카테고리 삭제 - 게시글 존재로 인한 실패")
+    @Test
+    void deleteCategory_Fail_HasPosts() throws Exception {
+        // given
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/v1/admin/categories/" + category.getId())
+                .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_DELETE_FAIL_HAS_POSTS.getMessage()));
     }
 
     @DisplayName("회원 목록 조회")

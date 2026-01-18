@@ -10,6 +10,7 @@ import com.dorandoran.domain.category.repository.CategoryGroupRepository;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.service.MemberService;
+import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class CategoryService {
 
     private final MemberService memberService;
+    private final PostService postService;
     private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
 
@@ -116,6 +118,11 @@ public class CategoryService {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        // 카테고리에 게시글이 있으면 삭제 불가
+        if (postService.existsPostByCategoryId(categoryId)) {
+            throw new CustomException(ErrorCode.CATEGORY_DELETE_FAIL_HAS_POSTS);
+        }
 
         categoryRepository.delete(category);
     }

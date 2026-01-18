@@ -44,4 +44,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.member = :findMember AND p.deletedAt IS NULL")
     Page<Post> findAllByMember(Member findMember, Pageable pageable);
+
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Post p WHERE p.category.id = :categoryId AND p.deletedAt IS NULL")
+    boolean existsByCategoryId(Long categoryId);
 }
