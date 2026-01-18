@@ -135,11 +135,6 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberTokenResponse login(LoginRequest dto) {
-        if (dto.getUsername() == null || dto.getUsername().isEmpty() ||
-                dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_LOGIN_REQUEST);
-        }
-
         Member member = memberRepository.findByUsername(dto.getUsername())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
