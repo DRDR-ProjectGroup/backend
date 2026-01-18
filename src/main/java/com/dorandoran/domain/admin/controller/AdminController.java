@@ -3,6 +3,9 @@ package com.dorandoran.domain.admin.controller;
 import com.dorandoran.domain.category.dto.request.CategoryGroupRequest;
 import com.dorandoran.domain.category.dto.request.CategoryRequest;
 import com.dorandoran.domain.category.service.CategoryService;
+import com.dorandoran.domain.member.dto.request.MemberStatusRequest;
+import com.dorandoran.domain.member.dto.response.MemberDetailResponse;
+import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ import java.security.Principal;
 public class AdminController {
 
     private final CategoryService categoryService;
+    private final MemberService memberService;
 
     @PostMapping("/groups")
     @Operation(summary = "카테고리 그룹 생성", description = "새로운 카테고리 그룹을 생성합니다.")
@@ -85,5 +90,25 @@ public class AdminController {
     ) {
         categoryService.deleteCategory(categoryId, principal.getName());
         return BaseResponse.ok(SuccessCode.CATEGORY_DELETE_SUCCESS);
+    }
+
+    @GetMapping("/members")
+    @Operation(summary = "회원 목록 조회", description = "전체 회원 목록을 조회합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<List<MemberDetailResponse>> getAllMembers(Principal principal) {
+        List<MemberDetailResponse> members = memberService.getAllMembers(principal.getName());
+        return BaseResponse.ok(SuccessCode.MEMBER_LIST_DETAIL_SUCCESS, members);
+    }
+
+    @PatchMapping("/members/{memberId}")
+    @Operation(summary = "회원 상태 변경", description = "특정 회원의 활동을 변경합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> setMemberStatus(
+            @PathVariable Long memberId,
+            @RequestBody MemberStatusRequest request,
+            Principal principal
+    ) {
+        memberService.setMemberStatus(memberId, request, principal.getName());
+        return BaseResponse.ok(SuccessCode.MEMBER_STATUS_CHANGE_SUCCESS);
     }
 }

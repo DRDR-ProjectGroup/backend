@@ -19,6 +19,9 @@ public enum ErrorCode {
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "중복된 이메일입니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 일치합니다."),
+    INVALID_LOGIN_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 로그인 요청입니다."),
+    MEMBER_DELETED(HttpStatus.UNAUTHORIZED, "탈퇴된 회원입니다."),
+    MEMBER_BLOCKED(HttpStatus.FORBIDDEN, "차단된 회원입니다."),
 
     // JWT 오류
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
@@ -52,6 +55,8 @@ public enum ErrorCode {
     // Admin 오류
     CATEGORY_GROUP_DELETE_FAIL_HAS_CATEGORIES(HttpStatus.BAD_REQUEST, "카테고리 그룹에 속한 카테고리가 존재하여 삭제할 수 없습니다."),
     CATEGORY_GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 그룹입니다."),
+    MEMBER_STATUS_SAME(HttpStatus.BAD_REQUEST, "변경하려는 상태가 현재 상태와 동일합니다."),
+    ADMIN_CANNOT_DELETE(HttpStatus.BAD_REQUEST, "탈퇴는 시킬 수 없습니다."),
 
     // Common 오류,
     VALIDATION_FAIL_ERROR(HttpStatus.BAD_REQUEST, "(exception error 메세지에 따름)"),
