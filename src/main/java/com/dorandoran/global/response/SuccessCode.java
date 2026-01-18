@@ -48,6 +48,9 @@ public enum SuccessCode {
     MESSAGE_LIST_SUCCESS(HttpStatus.OK, "메세지 목록 조회 성공"),
     MESSAGE_DELETE_SUCCESS(HttpStatus.OK, "메세지 삭제 성공"),
 
+    // Category
+    CATEGORY_LIST_SUCCESS(HttpStatus.OK, "카테고리 목록 조회 성공"),
+
     // Common
     SUCCESS(HttpStatus.OK, "요청 응답 성공"),
     ;
