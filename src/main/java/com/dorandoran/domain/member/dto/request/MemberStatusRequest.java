@@ -1,7 +1,7 @@
 package com.dorandoran.domain.member.dto.request;
 
 import com.dorandoran.domain.member.type.MemberStatus;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberStatusRequest {
-    @NotBlank
+    @NotNull
     private MemberStatus status;
 }

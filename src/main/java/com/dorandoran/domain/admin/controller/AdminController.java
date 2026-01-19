@@ -8,17 +8,19 @@ import com.dorandoran.domain.member.dto.response.MemberDetailResponse;
 import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
+import com.dorandoran.standard.page.dto.PageMemberDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final CategoryService categoryService;
@@ -95,8 +97,12 @@ public class AdminController {
     @GetMapping("/members")
     @Operation(summary = "회원 목록 조회", description = "전체 회원 목록을 조회합니다.")
     @SecurityRequirement(name = "bearerAuth")
-    public BaseResponse<List<MemberDetailResponse>> getAllMembers(Principal principal) {
-        List<MemberDetailResponse> members = memberService.getAllMembers(principal.getName());
+    public BaseResponse<PageMemberDto<MemberDetailResponse>> getAllMembers(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "20") int size,
+            Principal principal
+    ) {
+        PageMemberDto<MemberDetailResponse> members = memberService.getAllMembers(principal.getName(), page, size);
         return BaseResponse.ok(SuccessCode.MEMBER_LIST_DETAIL_SUCCESS, members);
     }
 

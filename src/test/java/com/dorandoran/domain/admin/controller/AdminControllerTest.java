@@ -30,6 +30,7 @@ class AdminControllerTest extends SpringBootTestSupporter {
     private Member admin;
     private List<CategoryGroup> categoryGroups;
     private Category category;
+    private Category otherCategory;
     private List<Member> memberList;
     private List<Post> posts;
 
@@ -38,6 +39,7 @@ class AdminControllerTest extends SpringBootTestSupporter {
         admin = memberFactory.saveAndCreateAdminMember();
         categoryGroups = categoryGroupFactory.saveAndCreateDefaultCategoryGroup();
         category = categoryFactory.saveAndCreateCategory("게임", "lol");
+        otherCategory = categoryFactory.saveAndCreateCategory("유머", "free");
         memberList = memberFactory.saveAndCreateMember(10);
         posts = postFactory.saveAndCreatePost(memberList.getFirst(), category, 10);
     }
@@ -320,7 +322,7 @@ class AdminControllerTest extends SpringBootTestSupporter {
         // given
 
         // when
-        ResultActions result = mockMvc.perform(delete("/api/v1/admin/categories/" + category.getId())
+        ResultActions result = mockMvc.perform(delete("/api/v1/admin/categories/" + otherCategory.getId())
                 .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
         );
 
@@ -367,8 +369,8 @@ class AdminControllerTest extends SpringBootTestSupporter {
         // when
         ResultActions result = mockMvc.perform(get("/api/v1/admin/members")
                 .with(user(String.valueOf(admin.getId())).roles("ADMIN"))
-                .param("page", "0")
-                .param("size", "10")
+                .param("page", "1")
+                .param("size", "20")
         );
 
         // then

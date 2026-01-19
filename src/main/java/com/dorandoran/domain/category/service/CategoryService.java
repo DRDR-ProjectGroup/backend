@@ -14,10 +14,13 @@ import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,24 +35,27 @@ public class CategoryService {
     public List<CategoryGroupResponse> getCategories() {
         List<Category> categories = categoryRepository.findAll();
 
+        Map<Long, List<Category>> categoryMap = categories.stream()
+                .collect(Collectors.groupingBy(
+                        category -> category.getGroup().getId()
+                ));
+
         List<CategoryGroup> groups = categoryGroupRepository.findAll();
 
-        List<CategoryGroupResponse> categoryGroupResponses = groups.stream()
-                .map(
-                        group -> {
-                            List<Category> groupedCategories = categories.stream()
-                                    .filter(category -> category.getGroup().getId().equals(group.getId()))
-                                    .toList();
-
-                            List<CategoryResponse> categoryResponses = groupedCategories.stream()
+        List<CategoryGroupResponse> responses = groups.stream()
+                .map(group -> {
+                    List<CategoryResponse> categoryResponses =
+                            categoryMap
+                                    .getOrDefault(group.getId(), List.of())
+                                    .stream()
                                     .map(CategoryResponse::of)
                                     .toList();
 
-                            return CategoryGroupResponse.of(group, categoryResponses);
-                        }
-                ).toList();
+                    return CategoryGroupResponse.of(group, categoryResponses);
+                })
+                .toList();
 
-        return categoryGroupResponses;
+        return responses;
     }
 
     @Transactional
@@ -150,4 +156,6 @@ public class CategoryService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
+
+    private final GroupedOpenApi groupApi;
 }

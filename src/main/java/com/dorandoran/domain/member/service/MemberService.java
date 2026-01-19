@@ -19,6 +19,7 @@ import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.security.auth.CustomUserDetails;
 import com.dorandoran.standard.page.dto.PageCommentDto;
 import com.dorandoran.standard.page.dto.PageDto;
+import com.dorandoran.standard.page.dto.PageMemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_CATEGORY;
@@ -266,16 +266,19 @@ public class MemberService {
     }
 
     @Transactional
-    public List<MemberDetailResponse> getAllMembers(String memberId) {
+    public PageMemberDto<MemberDetailResponse> getAllMembers(String memberId, int page, int size) {
         Member member = findMemberByStringId(memberId);
 
         if (!member.isAdmin()) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        List<Member> members = memberRepository.findAll();
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("username")));
 
-        return members.stream().map(MemberDetailResponse::of).toList();
+        Page<MemberDetailResponse> memberPage = memberRepository.findAll(pageable)
+                .map(MemberDetailResponse::of);
+
+        return new PageMemberDto<>(memberPage);
     }
 
     @Transactional
@@ -292,6 +295,11 @@ public class MemberService {
         }
 
         Member targetMember = findMemberById(targetMemberId);
+
+        // 타겟 멤버가 관리자일 경우 예외 처리
+        if (targetMember.isAdmin()) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
 
         // 현재 상태와 요청 상태가 같으면 예외 처리
         if (targetMember.getStatus() == request.getStatus()) {
