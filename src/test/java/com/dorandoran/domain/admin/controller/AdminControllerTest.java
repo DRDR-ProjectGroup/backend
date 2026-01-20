@@ -376,10 +376,10 @@ class AdminControllerTest extends SpringBootTestSupporter {
         // then
         result.andExpect(status().isOk());
         for (int i = 1; i <= 10; i++) {
-            result.andExpect(jsonPath("$.data[" + i + "].memberId").value(memberList.get(i - 1).getId()))
-                    .andExpect(jsonPath("$.data[" + i + "].username").value(memberList.get(i - 1).getUsername()))
-                    .andExpect(jsonPath("$.data[" + i + "].nickname").value(memberList.get(i - 1).getNickname()))
-                    .andExpect(jsonPath("$.data[" + i + "].email").value(memberList.get(i - 1).getEmail()))
+            result.andExpect(jsonPath("$.data.members[" + i + "].memberId").value(memberList.get(i - 1).getId()))
+                    .andExpect(jsonPath("$.data.members[" + i + "].username").value(memberList.get(i - 1).getUsername()))
+                    .andExpect(jsonPath("$.data.members[" + i + "].nickname").value(memberList.get(i - 1).getNickname()))
+                    .andExpect(jsonPath("$.data.members[" + i + "].email").value(memberList.get(i - 1).getEmail()))
             ;
         }
     }

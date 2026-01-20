@@ -232,7 +232,7 @@ class MemberServiceTest extends SpringBootTestSupporter {
     void modifyPassword() {
         // given
         Member member = memberFactory.saveAndCreateMember(1).getFirst();
-        PasswordRequest dto = new PasswordRequest("NewPass@123");
+        PasswordRequest dto = new PasswordRequest("test@1234", "NewPass@123", "NewPass@123");
 
         // when
         memberService.modifyPassword(String.valueOf(member.getId()), dto);
@@ -247,7 +247,7 @@ class MemberServiceTest extends SpringBootTestSupporter {
     void modifyPassword_sameAsCurrent() {
         // given
         Member member = memberFactory.saveAndCreateMember(1).getFirst();
-        PasswordRequest dto = new PasswordRequest("test@1234"); // 초기 비밀번호와 동일
+        PasswordRequest dto = new PasswordRequest("test@1234", "test@1234", "test@1234"); // 초기 비밀번호와 동일
 
         // when / then
         assertThatThrownBy(() -> memberService.modifyPassword(String.valueOf(member.getId()), dto))
