@@ -3,6 +3,7 @@ package com.dorandoran.domain.member.service;
 import com.dorandoran.domain.comment.dto.response.CommentListMemberResponse;
 import com.dorandoran.domain.comment.repository.CommentRepository;
 import com.dorandoran.domain.member.dto.request.*;
+import com.dorandoran.domain.member.dto.response.MemberDetailResponse;
 import com.dorandoran.domain.member.dto.response.MemberInfoResponse;
 import com.dorandoran.domain.member.dto.response.MemberTokenResponse;
 import com.dorandoran.domain.member.entity.Member;
@@ -18,6 +19,7 @@ import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.global.security.auth.CustomUserDetails;
 import com.dorandoran.standard.page.dto.PageCommentDto;
 import com.dorandoran.standard.page.dto.PageDto;
+import com.dorandoran.standard.page.dto.PageMemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -133,6 +135,15 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberTokenResponse login(LoginRequest dto) {
+        Member member = memberRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (member.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
+
         Authentication authentication = authenticateMember(dto);
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -196,6 +207,108 @@ public class MemberService {
         findMember.modifyPassword(newPassword);
     }
 
+    // 회원 삭제
+    @Transactional
+    public void deleteExpiredMember() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+
+        memberRepository.deleteAllByStatusDeletedAndBefore(MemberStatus.DELETED, threshold);
+    }
+
+    // 관리자 계정 생성
+    @Value("${custom.admin.username}")
+    private String adminUsername;
+
+    @Value("${custom.admin.password}")
+    private String adminPassword;
+
+    @Transactional
+    public void createAdminMember() {
+        if (memberRepository.findByUsername(adminUsername).isPresent()) {
+            return;
+        }
+
+        String username = adminUsername;
+        String password = passwordEncoder.encode(adminPassword);
+        String email = adminUsername + "@naver.com";
+        String nickname = "관리자";
+
+        Member member = Member.createMember(username, password, email, nickname);
+        member.setRoleAdmin();
+
+        memberRepository.save(member);
+    }
+
+    @Transactional(readOnly = true)
+    public PageDto<PostListResponse> getMyPosts(String memberId, int page, int size) {
+        long id = Long.parseLong(memberId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<PostListResponse> postListResponses = postRepository.findAllByMember(findMember, pageable).map(PostListResponse::of);
+
+        return new PageDto<>(postListResponses, null);
+    }
+
+    @Transactional(readOnly = true)
+    public PageCommentDto<CommentListMemberResponse> getMyComments(String memberId, int page, int size) {
+        long id = Long.parseLong(memberId);
+        Member findMember = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<CommentListMemberResponse> commentPage = commentRepository.findAllByMember(findMember, pageable).map(CommentListMemberResponse::of);
+
+        return new PageCommentDto<>(commentPage);
+    }
+
+    @Transactional
+    public PageMemberDto<MemberDetailResponse> getAllMembers(String memberId, int page, int size) {
+        Member member = findMemberByStringId(memberId);
+
+        if (!member.isAdmin()) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("username")));
+
+        Page<MemberDetailResponse> memberPage = memberRepository.findAll(pageable)
+                .map(MemberDetailResponse::of);
+
+        return new PageMemberDto<>(memberPage);
+    }
+
+    @Transactional
+    public void setMemberStatus(Long targetMemberId, MemberStatusRequest request, String memberId) {
+        // 관리자여도 탈퇴처리는 불가능
+        if (request.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.ADMIN_CANNOT_DELETE);
+        }
+
+        Member member = findMemberByStringId(memberId);
+
+        if (!member.isAdmin()) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        Member targetMember = findMemberById(targetMemberId);
+
+        // 타겟 멤버가 관리자일 경우 예외 처리
+        if (targetMember.isAdmin()) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        // 현재 상태와 요청 상태가 같으면 예외 처리
+        if (targetMember.getStatus() == request.getStatus()) {
+            throw new CustomException(ErrorCode.MEMBER_STATUS_SAME);
+        }
+
+        targetMember.modifyStatus(request.getStatus());
+    }
+
     // AuthenticationManager 를 통해 인증 처리
     private Authentication authenticateMember(LoginRequest dto) {
         UsernamePasswordAuthenticationToken authToken =
@@ -255,63 +368,6 @@ public class MemberService {
         if (!redisCode.equals(String.valueOf(authCode))) {
             throw new CustomException(ErrorCode.INVALID_AUTH_CODE);
         }
-    }
-
-    // 회원 삭제
-    @Transactional
-    public void deleteExpiredMember() {
-        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
-
-        memberRepository.deleteAllByStatusDeletedAndBefore(MemberStatus.DELETED, threshold);
-    }
-
-
-    // 관리자 계정 생성
-    @Value("${custom.admin.username}")
-    private String adminUsername;
-
-    @Value("${custom.admin.password}")
-    private String adminPassword;
-
-    @Transactional
-    public void createAdminMember() {
-        if (memberRepository.findByUsername(adminUsername).isPresent()) {
-            return;
-        }
-
-        String username = adminUsername;
-        String password = passwordEncoder.encode(adminPassword);
-        String email = adminUsername + "@naver.com";
-        String nickname = "관리자";
-
-        Member member = Member.createMember(username, password, email, nickname);
-        member.setRoleAdmin();
-
-        memberRepository.save(member);
-    }
-
-    public PageDto<PostListResponse> getMyPosts(String memberId, int page, int size) {
-        long id = Long.parseLong(memberId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
-        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
-
-        Page<PostListResponse> postListResponses = postRepository.findAllByMember(findMember, pageable).map(PostListResponse::of);
-
-        return new PageDto<>(postListResponses, null);
-    }
-
-    public PageCommentDto<CommentListMemberResponse> getMyComments(String memberId, int page, int size) {
-        long id = Long.parseLong(memberId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
-        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
-
-        Page<CommentListMemberResponse> commentPage = commentRepository.findAllByMember(findMember, pageable).map(CommentListMemberResponse::of);
-
-        return new PageCommentDto<>(commentPage);
     }
 
     public Member findMemberByStringId(String memberId) {

@@ -48,6 +48,19 @@ public enum SuccessCode {
     MESSAGE_LIST_SUCCESS(HttpStatus.OK, "메세지 목록 조회 성공"),
     MESSAGE_DELETE_SUCCESS(HttpStatus.OK, "메세지 삭제 성공"),
 
+    // Category
+    CATEGORY_LIST_SUCCESS(HttpStatus.OK, "카테고리 목록 조회 성공"),
+
+    // Admin
+    CATEGORY_GROUP_CREATE_SUCCESS(HttpStatus.CREATED, "카테고리 그룹 생성 성공"),
+    CATEGORY_GROUP_MODIFY_SUCCESS(HttpStatus.OK, "카테고리 그룹명 수정 성공"),
+    CATEGORY_GROUP_DELETE_SUCCESS(HttpStatus.OK, "카테고리 그룹 삭제 성공"),
+    CATEGORY_CREATE_SUCCESS(HttpStatus.CREATED, "카테고리 생성 성공"),
+    CATEGORY_MODIFY_SUCCESS(HttpStatus.OK, "카테고리명 수정 성공"),
+    CATEGORY_DELETE_SUCCESS(HttpStatus.OK, "카테고리 삭제 성공"),
+    MEMBER_LIST_DETAIL_SUCCESS(HttpStatus.OK, "회원 상세 목록 조회 성공"),
+    MEMBER_STATUS_CHANGE_SUCCESS(HttpStatus.OK, "회원 상태 변경 성공"),
+
     // Common
     SUCCESS(HttpStatus.OK, "요청 응답 성공"),
     ;

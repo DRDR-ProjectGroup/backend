@@ -91,4 +91,12 @@ public class Member extends BaseTime {
     public void setRoleAdmin() {
         this.role = Role.ROLE_ADMIN;
     }
+
+    public boolean isAdmin() {
+        return this.role == Role.ROLE_ADMIN;
+    }
+
+    public void modifyStatus(MemberStatus memberStatus) {
+        this.status = memberStatus;
+    }
 }

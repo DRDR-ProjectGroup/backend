@@ -26,4 +26,8 @@ public class CategoryGroup extends BaseTime {
                 .name(name)
                 .build();
     }
+
+    public void modifyGroupName(String groupName) {
+        this.name = groupName;
+    }
 }

@@ -290,4 +290,8 @@ public class PostService {
 
         return PageRequest.of(Math.max(0, page - 1), size, sortCondition);
     }
+
+    public boolean existsPostByCategoryId(Long categoryId) {
+        return postRepository.existsByCategoryId(categoryId);
+    }
 }
