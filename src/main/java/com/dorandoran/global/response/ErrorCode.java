@@ -22,6 +22,8 @@ public enum ErrorCode {
     INVALID_LOGIN_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 로그인 요청입니다."),
     MEMBER_DELETED(HttpStatus.UNAUTHORIZED, "탈퇴된 회원입니다."),
     MEMBER_BLOCKED(HttpStatus.FORBIDDEN, "차단된 회원입니다."),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
+    PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 
     // JWT 오류
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),

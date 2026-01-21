@@ -236,7 +236,7 @@ class MemberControllerTest extends SpringBootTestSupporter {
     void modifyPassword() throws Exception {
         // given
         Member member = memberFactory.saveAndCreateMember(1).getFirst();
-        PasswordRequest passwordRequest = new PasswordRequest("NewPass@1234");
+        PasswordRequest passwordRequest = new PasswordRequest("test@1234", "NewPass@1234", "NewPass@1234");
 
         // when
         ResultActions result = mockMvc.perform(patch("/api/v1/members/me/password")

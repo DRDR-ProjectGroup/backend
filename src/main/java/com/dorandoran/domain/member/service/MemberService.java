@@ -197,7 +197,17 @@ public class MemberService {
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 현재 비밀번호 일치 여부 확인
+        // 현재 비밀번호 확인
+        if (!passwordEncoder.matches(passwordDto.getPassword(), findMember.getPassword())) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        // 새 비밀번호와 새 비밀번호 확인이 일치하는지 확인
+        if (!passwordDto.getNewPassword().equals(passwordDto.getNewPassword2())) {
+            throw new CustomException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
+        }
+
+        // 새 비밀번호와 현재 비밀번호 일치 여부 확인
         if (passwordEncoder.matches(passwordDto.getNewPassword(), findMember.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_CURRENT_PASSWORD);
         }
@@ -273,7 +283,7 @@ public class MemberService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("username")));
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("id")));
 
         Page<MemberDetailResponse> memberPage = memberRepository.findAll(pageable)
                 .map(MemberDetailResponse::of);
