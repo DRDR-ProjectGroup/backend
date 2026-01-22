@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryGroupRequest {
-    @NotBlank
+    @NotBlank(message = "그룹 이름은 필수 입력 항목입니다.")
     private String groupName;
 }
