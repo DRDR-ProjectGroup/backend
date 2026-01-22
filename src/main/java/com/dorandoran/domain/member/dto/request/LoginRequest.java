@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequest {
-    @NotBlank
+    @NotBlank(message = "아이디를 확인해주세요.")
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "비밀번호를 확인해주세요.")
     private String password;
 }

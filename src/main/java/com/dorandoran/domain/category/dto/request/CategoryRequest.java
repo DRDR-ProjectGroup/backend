@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryRequest {
-    @NotNull
+    @NotNull(message = "그룹을 선택해주세요.")
     private Long groupId;
-    @NotBlank
+    @NotBlank(message = "카테고리 이름은 필수 입력 항목입니다.")
     private String categoryName;
-    @NotBlank
+    @NotBlank(message = "카테고리 주소는 필수 입력 항목입니다.")
     private String categoryAddress;
 }

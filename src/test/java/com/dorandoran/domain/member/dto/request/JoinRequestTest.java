@@ -69,9 +69,9 @@ class JoinRequestTest {
         assertThat(validate.stream()
                 .anyMatch(v -> v.getMessage().equals("비밀번호가 일치하지 않습니다."))).isTrue();
         assertThat(validate.stream()
-                .anyMatch(v -> v.getMessage().equals("크기가 4에서 2147483647 사이여야 합니다"))).isTrue();
+                .anyMatch(v -> v.getMessage().equals("아이디는 최소 4자 이상이어야 합니다."))).isTrue();
         assertThat(validate.stream()
-                .anyMatch(v -> v.getMessage().equals("크기가 8에서 2147483647 사이여야 합니다"))).isTrue();
+                .anyMatch(v -> v.getMessage().equals("비밀번호는 최소 8자 이상이어야 합니다."))).isTrue();
         assertThat(validate.stream()
                 .anyMatch(v -> v.getMessage().equals("닉네임에는 공백을 포함할 수 없습니다."))).isTrue();
     }

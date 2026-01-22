@@ -1,6 +1,7 @@
 package com.dorandoran.domain.post.entity;
 
 import com.dorandoran.domain.category.entity.Category;
+import com.dorandoran.domain.comment.entity.Comment;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
@@ -40,6 +41,9 @@ public class Post extends BaseTime {
 
     @Column(nullable = false)
     private int likeCount;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean isNotice;
@@ -102,5 +106,9 @@ public class Post extends BaseTime {
 
     public void changeNoticeStatus(boolean isNotice) {
         this.isNotice = isNotice;
+    }
+
+    public int getCommentCount() {
+        return this.comments.size();
     }
 }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostLikeRequest {
-    @NotNull
+    @NotNull(message = "좋아요 타입을 입력해주세요.")
     private LikeType likeType;
 }

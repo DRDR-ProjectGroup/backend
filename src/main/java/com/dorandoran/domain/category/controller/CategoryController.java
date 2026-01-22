@@ -5,6 +5,7 @@ import com.dorandoran.domain.category.service.CategoryService;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
+@Tag(name = "CategoryController", description = "카테고리 관련 API")
 public class CategoryController {
 
     private final CategoryService categoryService;
