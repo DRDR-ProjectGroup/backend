@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @PasswordMatch
 public class JoinRequest {
 
-    @NotBlank
+    @NotBlank(message = "아이디는 필수 입력 항목입니다.")
     @Size(min = 4)
     @Pattern(
             regexp = "^[a-zA-Z0-9]+$",
@@ -23,7 +23,7 @@ public class JoinRequest {
     )
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
     @Size(min = 8)
     @Pattern(
             regexp = "^(?=.*[!@#$%^&*(),.?\":{}|<>]).+$",
@@ -31,10 +31,10 @@ public class JoinRequest {
     )
     private String password;
 
-    @NotBlank
+    @NotBlank(message = "비밀번호 확인은 필수 입력 항목입니다.")
     private String password2;
 
-    @NotBlank
+    @NotBlank(message = "닉네임은 필수 입력 항목입니다.")
     @Pattern(
             regexp = "^[^\\s]+$",
             message = "닉네임에는 공백을 포함할 수 없습니다."

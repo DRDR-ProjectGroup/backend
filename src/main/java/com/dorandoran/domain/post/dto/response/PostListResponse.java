@@ -15,8 +15,10 @@ public class PostListResponse {
     private String title;
     private String content;
     private String author;
+    private String category;
     private int viewCount;
     private int likeCount;
+    private int commentCount;
     private boolean isNotice;
     private String createdAt;
 
@@ -26,8 +28,10 @@ public class PostListResponse {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .author(post.getMember().getNickname())
+                .category(post.getCategory().getName())
                 .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
+                .commentCount(post.getCommentCount())
                 .isNotice(post.isNotice())
                 .createdAt(post.getCreatedAt().toString())
                 .build();
