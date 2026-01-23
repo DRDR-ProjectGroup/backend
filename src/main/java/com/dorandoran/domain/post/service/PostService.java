@@ -140,7 +140,7 @@ public class PostService {
         Post post = findPostById(postId);
 
         // 작성자 본인 검증 및 관리자 권한 검증
-        if (!post.getMember().getId().equals(member.getId()) && !member.getRole().equals(Role.ROLE_ADMIN)) {
+        if (!post.getMember().getId().equals(member.getId()) && !member.isAdmin()) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
         }
 

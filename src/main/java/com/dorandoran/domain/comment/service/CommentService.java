@@ -7,7 +7,6 @@ import com.dorandoran.domain.comment.entity.Comment;
 import com.dorandoran.domain.comment.repository.CommentRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.service.MemberService;
-import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.global.exception.CustomException;
@@ -126,7 +125,7 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
         // 작성자 권한 확인 & 관리자 권한 확인
-        if (!comment.getMember().getId().equals(member.getId()) && !member.getRole().equals(Role.ROLE_ADMIN)) {
+        if (!comment.getMember().getId().equals(member.getId()) && !member.isAdmin()) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
