@@ -41,15 +41,15 @@ public class BaseInitData {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     void init() {
+        memberService.createAdminMember();
         createMemberData(3);
         createDefaultCategoryGroup();
         createDefaultCategory();
         createPostAndPostMediaData();
-        memberService.createAdminMember();
     }
 
     private List<Member> createMemberData(int count) {
-        if (memberRepository.count() != 0) {
+        if (memberRepository.count() > 1) {
             return memberRepository.findAll();
         }
 
@@ -61,7 +61,7 @@ public class BaseInitData {
         for (int i = 1; i <= count; i++) {
             String username = "test" + i;
             String email = "test" + i + "@email.com";
-            String password = passwordEncoder.encode("test1234");
+            String password = passwordEncoder.encode("test!1234");
             String nickname = "test" + i;
 
             memberList.add(memberRepository.save(Member.createMember(username, password, email, nickname)));
@@ -102,6 +102,15 @@ public class BaseInitData {
                                 categoryGroupRepository.findByName("유머").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
                                 "유머",
                                 "humor"
+                        )
+                )
+        );
+        categoryList.add(
+                categoryRepository.save(
+                        Category.createCategory(
+                                categoryGroupRepository.findByName("정보").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
+                                "정보",
+                                "info"
                         )
                 )
         );
