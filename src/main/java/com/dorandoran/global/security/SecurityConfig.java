@@ -124,9 +124,9 @@ public class SecurityConfig {
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedEntryPoint))
+                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(guestTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 
         return http.build();

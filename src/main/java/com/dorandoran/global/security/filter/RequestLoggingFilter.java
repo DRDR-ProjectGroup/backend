@@ -17,8 +17,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
         String method = request.getMethod();
+        String queryString = request.getQueryString();
+        String uri = request.getRequestURI() + (queryString != null ? "?" + queryString : "");
 
         filterChain.doFilter(request, response);
 

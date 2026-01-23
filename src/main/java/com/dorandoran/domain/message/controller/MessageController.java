@@ -32,8 +32,8 @@ public class MessageController {
             @RequestBody MessageSendRequest request,
             Principal principal
     ) {
-        log.info("메세지 전송 요청: sender={}, receiver={}, content={}",
-                principal.getName(), receiverId, request.getContent());
+        log.info("메세지 전송 요청: user(sender)={}, receiver={}",
+                principal.getName(), receiverId);
         messageService.sendMessage(receiverId, principal.getName(), request);
         return BaseResponse.ok(SuccessCode.MESSAGE_SEND_SUCCESS);
     }
