@@ -6,6 +6,7 @@ import com.dorandoran.global.security.entrypoint.CustomAccessDeniedEntryPoint;
 import com.dorandoran.global.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.dorandoran.global.security.filter.AuthenticationFilter;
 import com.dorandoran.global.security.filter.GuestTokenFilter;
+import com.dorandoran.global.security.filter.RequestLoggingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final CorsProperties corsProperties;
     private final AuthenticationFilter authenticationFilter;
     private final GuestTokenFilter guestTokenFilter;
+    private final RequestLoggingFilter requestLoggingFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedEntryPoint customAccessDeniedEntryPoint;
 
@@ -122,6 +124,7 @@ public class SecurityConfig {
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedEntryPoint))
+                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(guestTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
         ;

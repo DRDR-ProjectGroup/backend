@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -28,6 +29,7 @@ import static com.dorandoran.global.jwt.JWTConstant.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/members")
 @Tag(name = "MemberController", description = "회원 관련 API")
+@Slf4j
 public class MemberController {
 
     private final MemberService memberService;
@@ -66,6 +68,7 @@ public class MemberController {
             @Valid @RequestBody LoginRequest dto,
             HttpServletResponse response
     ) {
+        log.info("Login User: {}", dto.getUsername());
         MemberTokenResponse token = memberService.login(dto);
         addJwtTokenResponse(response, token);
         return BaseResponse.ok(SuccessCode.LOGIN_SUCCESS);
@@ -78,6 +81,7 @@ public class MemberController {
             HttpServletResponse response,
             Principal principal
     ) {
+        log.info("Logout User: {}", principal.getName());
         // memberService.logout 에서 Redis 에서 refresh token 삭제
         memberService.logout(principal.getName());
 
@@ -93,6 +97,7 @@ public class MemberController {
             HttpServletResponse response,
             Principal principal
     ) {
+        log.info("Resign User: {}", principal.getName());
         memberService.resign(principal.getName());
         deleteRefreshTokenCookie(response);
         return BaseResponse.ok(SuccessCode.RESIGN_SUCCESS);
@@ -115,6 +120,7 @@ public class MemberController {
             @Valid @RequestBody NicknameRequest nicknameDto,
             Principal principal
     ) {
+        log.info("Modify Nickname User: {}", principal.getName());
         memberService.modifyNickname(principal.getName(), nicknameDto);
         return BaseResponse.ok(SuccessCode.NICKNAME_MODIFY_SUCCESS);
     }
@@ -126,6 +132,7 @@ public class MemberController {
             @Valid @RequestBody PasswordRequest passwordDto,
             Principal principal
     ) {
+        log.info("Modify Password User: {}", principal.getName());
         memberService.modifyPassword(principal.getName(), passwordDto);
         return BaseResponse.ok(SuccessCode.PASSWORD_MODIFY_SUCCESS);
     }

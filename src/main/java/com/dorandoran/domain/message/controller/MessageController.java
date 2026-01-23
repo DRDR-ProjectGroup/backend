@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -18,6 +19,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/messages")
 @Tag(name = "MessageController", description = "메세지 API")
+@Slf4j
 public class MessageController {
 
     private final MessageService messageService;
@@ -30,6 +32,8 @@ public class MessageController {
             @RequestBody MessageSendRequest request,
             Principal principal
     ) {
+        log.info("메세지 전송 요청: user(sender)={}, receiver={}",
+                principal.getName(), receiverId);
         messageService.sendMessage(receiverId, principal.getName(), request);
         return BaseResponse.ok(SuccessCode.MESSAGE_SEND_SUCCESS);
     }
@@ -65,6 +69,7 @@ public class MessageController {
             @PathVariable Long messageId,
             Principal principal
     ) {
+        log.info("메세지 삭제 요청: messageId={}, user={}", messageId, principal.getName());
         messageService.deleteMessage(messageId, principal.getName());
         return BaseResponse.ok(SuccessCode.MESSAGE_DELETE_SUCCESS);
     }

@@ -41,6 +41,7 @@ public class PostController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             Principal principal
     ) throws IOException {
+        log.info("Create Post Category: {}, User: {}", categoryName, principal.getName());
         PostResponse postResponse = postService.createPost(principal.getName(), categoryName, request, files);
         return BaseResponse.ok(SuccessCode.POST_CREATE_SUCCESS, postResponse);
     }
@@ -64,6 +65,7 @@ public class PostController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             Principal principal
     ) throws IOException {
+        log.info("Modify Post Post ID: {}, User: {}", postId, principal.getName());
         PostResponse postResponse = postService.modifyPost(principal.getName(), postId, request, files);
         return BaseResponse.ok(SuccessCode.POST_MODIFY_SUCCESS, postResponse);
     }
@@ -75,6 +77,7 @@ public class PostController {
             @PathVariable Long postId,
             Principal principal
     ) {
+        log.info("Delete Post Post ID: {}, User: {}", postId, principal.getName());
         postService.deletePost(postId, principal.getName());
         return BaseResponse.ok(SuccessCode.POST_DELETE_SUCCESS);
     }
@@ -101,6 +104,7 @@ public class PostController {
             @RequestBody PostLikeRequest request,
             Principal principal
     ) {
+        log.info("Like Post Post ID: {}, User: {}, LikeType: {}", postId, principal.getName(), request.getLikeType());
         PostLikeResponse response = postService.likePost(principal.getName(), postId, request);
         return BaseResponse.ok(SuccessCode.POST_LIKE_SUCCESS, response);
     }
@@ -112,6 +116,7 @@ public class PostController {
             @PathVariable Long postId,
             Principal principal
     ) {
+        log.info("Set Post Notice Post ID: {}, Admin User: {}", postId, principal.getName());
         postService.setPostNotice(principal.getName(), postId);
         return BaseResponse.ok(SuccessCode.POST_NOTICE_SUCCESS);
     }
