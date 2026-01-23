@@ -139,8 +139,8 @@ public class PostService {
         // 게시글 조회
         Post post = findPostById(postId);
 
-        // 작성자 검증
-        if (!post.getMember().getId().equals(member.getId())) {
+        // 작성자 본인 검증 및 관리자 권한 검증
+        if (!post.getMember().getId().equals(member.getId()) && !member.isAdmin()) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
         }
 

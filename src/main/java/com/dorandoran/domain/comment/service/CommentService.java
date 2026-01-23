@@ -124,8 +124,8 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndPost(commentId, post)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
-        // 작성자 권한 확인
-        if (!comment.getMember().getId().equals(member.getId())) {
+        // 작성자 권한 확인 & 관리자 권한 확인
+        if (!comment.getMember().getId().equals(member.getId()) && !member.isAdmin()) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
