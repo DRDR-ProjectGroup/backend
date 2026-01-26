@@ -1,5 +1,6 @@
 package com.dorandoran.domain.post.dto.response;
 
+import com.dorandoran.domain.member.dto.response.AuthorResponse;
 import com.dorandoran.domain.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ public class PostResponse {
     private String postId;
     private String title;
     private String content;
-    private String author;
+    private AuthorResponse author;
     private int viewCount;
     private int likeCount;
     private String category;
@@ -29,7 +30,7 @@ public class PostResponse {
                 .postId(post.getId().toString())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .author(post.getMember().getNickname())
+                .author(AuthorResponse.of(post.getMember()))
                 .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
                 .category(post.getCategory().getName())
