@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PostResponse {
-    private String postId;
+    private Long postId;
     private String title;
     private String content;
     private AuthorResponse author;
@@ -24,11 +25,11 @@ public class PostResponse {
     private CategoryResponse category;
     private List<PostMediaResponse> mediaList;
     private boolean isNotice;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     public static PostResponse of(Post post, List<PostMediaResponse> mediaList) {
         return PostResponse.builder()
-                .postId(post.getId().toString())
+                .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .author(AuthorResponse.of(post.getMember()))
@@ -37,7 +38,7 @@ public class PostResponse {
                 .category(CategoryResponse.of(post.getCategory()))
                 .mediaList(mediaList)
                 .isNotice(post.isNotice())
-                .createdAt(post.getCreatedAt().toString())
+                .createdAt(post.getCreatedAt())
                 .build();
 
     }
