@@ -12,28 +12,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthMemberResponse {
-    private Long memberId;
-    private String username;
-    private String email;
+public class AuthorResponse {
+    private long memberId;
     private String nickname;
     private Role role;
     private MemberStatus status;
-    private String accessToken;
-    private String refreshToken;
-    private String guestToken;
 
-    public static AuthMemberResponse of(Member member, String accessToken, String refreshToken, String guestToken) {
-        return AuthMemberResponse.builder()
+    public static AuthorResponse of(Member member) {
+        return AuthorResponse.builder()
                 .memberId(member.getId())
-                .username(member.getUsername())
-                .email(member.getEmail())
                 .nickname(member.getNickname())
                 .role(member.getRole())
                 .status(member.getStatus())
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .guestToken(guestToken)
                 .build();
     }
 }

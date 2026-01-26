@@ -1,11 +1,14 @@
 package com.dorandoran.domain.post.dto.response;
 
+import com.dorandoran.domain.category.dto.response.CategoryResponse;
+import com.dorandoran.domain.member.dto.response.AuthorResponse;
 import com.dorandoran.domain.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -13,29 +16,29 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PostResponse {
-    private String postId;
+    private Long postId;
     private String title;
     private String content;
-    private String author;
+    private AuthorResponse author;
     private int viewCount;
     private int likeCount;
-    private String category;
+    private CategoryResponse category;
     private List<PostMediaResponse> mediaList;
     private boolean isNotice;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     public static PostResponse of(Post post, List<PostMediaResponse> mediaList) {
         return PostResponse.builder()
-                .postId(post.getId().toString())
+                .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .author(post.getMember().getNickname())
+                .author(AuthorResponse.of(post.getMember()))
                 .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
-                .category(post.getCategory().getName())
+                .category(CategoryResponse.of(post.getCategory()))
                 .mediaList(mediaList)
                 .isNotice(post.isNotice())
-                .createdAt(post.getCreatedAt().toString())
+                .createdAt(post.getCreatedAt())
                 .build();
 
     }
