@@ -1,6 +1,7 @@
 package com.dorandoran.domain.post.storage;
 
 import com.dorandoran.domain.post.generator.FilePathGenerator;
+import com.dorandoran.domain.post.generator.MediaUrlGenerator;
 import com.dorandoran.domain.post.type.MediaType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 public class LocalMediaStorage implements MediaStorage {
 
     private final FilePathGenerator filePathGenerator;
+    private final MediaUrlGenerator mediaUrlGenerator;
 
     @Override
     public StoredMedia save(MultipartFile file, MediaType mediaType) throws IOException {
@@ -26,13 +28,15 @@ public class LocalMediaStorage implements MediaStorage {
         String storedName = UUID.randomUUID() + "_" + new File(requireNonNull(file.getOriginalFilename())).getName();
         Path savePath = dirPath.resolve(storedName);
 
+        Path imgUrlPath = mediaUrlGenerator.generate(mediaType, storedName);
+
         Files.createDirectories(dirPath);
         file.transferTo(savePath.toFile());
 
         return new StoredMedia(
                 file.getOriginalFilename(),
                 storedName,
-                savePath.toString(),
+                imgUrlPath.toString(),
                 file.getSize()
         );
     }
