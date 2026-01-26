@@ -1,5 +1,6 @@
 package com.dorandoran.domain.post.dto.response;
 
+import com.dorandoran.domain.category.dto.response.CategoryResponse;
 import com.dorandoran.domain.member.dto.response.AuthorResponse;
 import com.dorandoran.domain.post.entity.Post;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class PostResponse {
     private AuthorResponse author;
     private int viewCount;
     private int likeCount;
-    private String category;
+    private CategoryResponse category;
     private List<PostMediaResponse> mediaList;
     private boolean isNotice;
     private String createdAt;
@@ -33,7 +34,7 @@ public class PostResponse {
                 .author(AuthorResponse.of(post.getMember()))
                 .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
-                .category(post.getCategory().getName())
+                .category(CategoryResponse.of(post.getCategory()))
                 .mediaList(mediaList)
                 .isNotice(post.isNotice())
                 .createdAt(post.getCreatedAt().toString())

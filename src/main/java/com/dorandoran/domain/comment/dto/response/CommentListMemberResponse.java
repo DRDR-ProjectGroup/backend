@@ -6,20 +6,22 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CommentListMemberResponse {
-    private String postId;
+    private Long postId;
     private String content;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     public static CommentListMemberResponse of(Comment comment) {
         return CommentListMemberResponse.builder()
-                .postId(comment.getPost().getId().toString())
+                .postId(comment.getPost().getId())
                 .content(comment.getContent())
-                .createdAt(comment.getCreatedAt().toString())
+                .createdAt(comment.getCreatedAt())
                 .build();
     }
 }

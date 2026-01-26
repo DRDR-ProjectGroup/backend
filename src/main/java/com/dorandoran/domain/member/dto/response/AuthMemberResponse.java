@@ -1,6 +1,8 @@
 package com.dorandoran.domain.member.dto.response;
 
 import com.dorandoran.domain.member.entity.Member;
+import com.dorandoran.domain.member.type.MemberStatus;
+import com.dorandoran.domain.member.type.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,8 +17,8 @@ public class AuthMemberResponse {
     private String username;
     private String email;
     private String nickname;
-    private String role;
-    private String status;
+    private Role role;
+    private MemberStatus status;
     private String accessToken;
     private String refreshToken;
     private String guestToken;
@@ -27,8 +29,8 @@ public class AuthMemberResponse {
                 .username(member.getUsername())
                 .email(member.getEmail())
                 .nickname(member.getNickname())
-                .role(member.getRole().name())
-                .status(member.getStatus().name())
+                .role(member.getRole())
+                .status(member.getStatus())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .guestToken(guestToken)

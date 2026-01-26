@@ -1,10 +1,14 @@
 package com.dorandoran.domain.member.dto.response;
 
 import com.dorandoran.domain.member.entity.Member;
+import com.dorandoran.domain.member.type.MemberStatus;
+import com.dorandoran.domain.member.type.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -15,11 +19,11 @@ public class MemberDetailResponse {
     private String username;
     private String nickname;
     private String email;
-    private String role;
-    private String status;
-    private String createdAt;
-    private String modifiedAt;
-    private String deletedAt;
+    private Role role;
+    private MemberStatus status;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private LocalDateTime deletedAt;
 
     public static MemberDetailResponse of(Member member) {
         return MemberDetailResponse.builder()
@@ -27,11 +31,11 @@ public class MemberDetailResponse {
                 .username(member.getUsername())
                 .nickname(member.getNickname())
                 .email(member.getEmail())
-                .role(member.getRole().name())
-                .status(member.getStatus().name())
-                .createdAt(member.getCreatedAt().toString())
-                .modifiedAt(member.getModifiedAt().toString())
-                .deletedAt(member.getDeletedAt() != null ? member.getDeletedAt().toString() : null)
+                .role(member.getRole())
+                .status(member.getStatus())
+                .createdAt(member.getCreatedAt())
+                .modifiedAt(member.getModifiedAt())
+                .deletedAt(member.getDeletedAt() != null ? member.getDeletedAt() : null)
                 .build();
     }
 }
