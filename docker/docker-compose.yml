@@ -9,7 +9,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       TZ: ${MYSQL_TIME_ZONE}
     ports:
-      - "${MYSQL_OUT_PORT}:${MYSQL_OUT_PORT}"
+      - "${MYSQL_OUT_PORT}:3306"
     networks:
       - drdr-network
     volumes:
@@ -27,7 +27,7 @@ services:
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
-      - "${REDIS_OUT_PORT}:${REDIS_OUT_PORT}"
+      - "${REDIS_OUT_PORT}:6379"
     networks:
       - drdr-network
     volumes:
@@ -35,6 +35,24 @@ services:
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
+    container_name: doranElasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "${ELASTICSEARCH_OUT_PORT}:9200"
+    networks:
+      - drdr-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5

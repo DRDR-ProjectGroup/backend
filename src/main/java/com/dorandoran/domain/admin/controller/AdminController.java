@@ -6,6 +6,7 @@ import com.dorandoran.domain.category.service.CategoryService;
 import com.dorandoran.domain.member.dto.request.MemberStatusRequest;
 import com.dorandoran.domain.member.dto.response.MemberDetailResponse;
 import com.dorandoran.domain.member.service.MemberService;
+import com.dorandoran.domain.search.service.PostBulkIndexService;
 import com.dorandoran.global.response.BaseResponse;
 import com.dorandoran.global.response.SuccessCode;
 import com.dorandoran.standard.page.dto.PageMemberDto;
@@ -29,6 +30,7 @@ public class AdminController {
 
     private final CategoryService categoryService;
     private final MemberService memberService;
+    private final PostBulkIndexService postBulkIndexService;
 
     @PostMapping("/groups")
     @Operation(summary = "카테고리 그룹 생성", description = "새로운 카테고리 그룹을 생성합니다.")
@@ -127,5 +129,11 @@ public class AdminController {
         log.info("Admin '{}' is changing status of member ID '{}' to '{}'", principal.getName(), memberId, request.getStatus());
         memberService.setMemberStatus(memberId, request, principal.getName());
         return BaseResponse.ok(SuccessCode.MEMBER_STATUS_CHANGE_SUCCESS);
+    }
+
+    // bulk index posts for search
+    @PostMapping("/reindex/posts")
+    public void reindex() throws Exception {
+        postBulkIndexService.bulkIndex();
     }
 }

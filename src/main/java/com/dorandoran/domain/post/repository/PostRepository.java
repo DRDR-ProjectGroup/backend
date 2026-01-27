@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Modifying
@@ -47,4 +49,24 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Post p WHERE p.category.id = :categoryId AND p.deletedAt IS NULL")
     boolean existsByCategoryId(Long categoryId);
+
+    @Query("""
+                        SELECT p FROM Post p
+                        WHERE p.id IN :ids
+                          AND p.deletedAt IS NULL
+                        ORDER BY
+                          p.createdAt DESC
+            """)
+    List<Post> findLatestPostsByIds(List<Long> ids);
+
+    @Query("""
+                        SELECT p FROM Post p
+                        WHERE p.id IN :ids
+                          AND p.deletedAt IS NULL
+                          AND p.likeCount >= :minLikeCount
+                        ORDER BY
+                          p.popularAt DESC,
+                          p.createdAt DESC
+            """)
+    List<Post> findPopularPostsByIds(List<Long> ids, Integer minLikeCount);
 }

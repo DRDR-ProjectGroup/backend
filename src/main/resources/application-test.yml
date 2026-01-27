@@ -63,3 +63,7 @@ redis:
   port: 6370
   password: test1234
   timeout: 3000ms
+
+search:
+  elastic:
+    enabled: false

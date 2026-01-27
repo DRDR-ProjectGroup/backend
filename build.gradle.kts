@@ -60,6 +60,10 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
 
+    // Elasticsearch
+    implementation("co.elastic.clients:elasticsearch-java:9.2.3")
+    implementation("org.elasticsearch.client:elasticsearch-rest-client:9.2.3")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis-test")
