@@ -86,3 +86,7 @@ redis:
   port: ${DRDR_REDIS_DB_PORT}
   password: ${DRDR_REDIS_DB_PASSWORD}
   timeout: 3000ms
+
+search:
+  elastic:
+    enabled: true

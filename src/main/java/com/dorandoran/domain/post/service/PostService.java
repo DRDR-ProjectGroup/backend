@@ -21,18 +21,23 @@ import com.dorandoran.domain.post.storage.StoredMedia;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.domain.post.type.PostSortType;
+import com.dorandoran.domain.search.doc.PostDocument;
+import com.dorandoran.domain.search.dto.SearchResult;
+import com.dorandoran.domain.search.service.PostIndexService;
+import com.dorandoran.domain.search.service.PostSearchService;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
 import com.dorandoran.standard.page.dto.PageDto;
 import com.dorandoran.standard.search.SearchType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -41,6 +46,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -49,6 +55,11 @@ public class PostService {
     private final MediaStorage mediaStorage;
     private final RedisRepository redisRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostIndexService postIndexService;
+    private final PostSearchService postSearchService;
+
+    @Value("${search.elastic.enabled}")
+    private boolean elasticEnabled;
 
     private static final int POST_POPULAR_LIKE_COUNT = 10;
 
@@ -71,6 +82,24 @@ public class PostService {
         if (files != null && !files.isEmpty()) {
             savePostMedia(saved, files);
         }
+
+        // 검색을 위한 색인 작업 (미디어 저장 후, 트랜잭션 커밋 후 실행)
+        PostDocument doc = PostDocument.createDoc(saved);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        postIndexService.index(doc);
+                    } catch (IOException e) {
+                        log.error("Failed to index post after commit, id={}", saved.getId(), e);
+                    }
+                }
+            });
+        } else {
+            postIndexService.index(doc);
+        }
+
 
         List<PostMediaResponse> mediaResponses = saved.getPostMediaList().stream()
                 .map(PostMediaResponse::of)
@@ -124,6 +153,24 @@ public class PostService {
             savePostMedia(post, files);
         }
 
+        // 수정 후 색인 갱신을 트랜잭션 커밋 후 실행 (DB 정합성을 위해 DB에 반영된 후 색인 작업 수행)
+        PostDocument doc = PostDocument.createDoc(post);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        postIndexService.index(doc);
+                    } catch (IOException e) {
+                        log.error("Failed to index post after commit, id={}", post.getId(), e);
+                    }
+                }
+            });
+        } else {
+            // 트랜잭션이 없으면 즉시 실행
+            postIndexService.index(doc);
+        }
+
         List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
                 .map(PostMediaResponse::of)
                 .toList();
@@ -145,6 +192,26 @@ public class PostService {
         }
 
         post.setDeletedAt();
+
+        // soft-delete 후 ES 색인에서 해당 문서 삭제를 트랜잭션 커밋 후 실행
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        postIndexService.delete(postId);
+                    } catch (IOException e) {
+                        log.error("Failed to delete post index after commit for id={}", postId, e);
+                    }
+                }
+            });
+        } else {
+            try {
+                postIndexService.delete(postId);
+            } catch (IOException e) {
+                log.error("Failed to delete post index for id={}", postId, e);
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -156,6 +223,69 @@ public class PostService {
                     .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
         }
 
+        boolean useElastic =
+                elasticEnabled && keyword != null && !keyword.isBlank();
+
+        if (useElastic) {
+            return searchByElasticSearch(searchType, keyword, page, size, sort, category);
+        }
+
+        return searchByDatabase(searchType, keyword, page, size, sort, category);
+    }
+
+    private PageDto<PostListResponse> searchByElasticSearch(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
+        // ES에서 id 목록과 총건수를 받아온다
+        SearchResult result;
+
+        try {
+            result = postSearchService.searchPostIds(
+                    searchType != null ? searchType : SearchType.ALL,
+                    keyword,
+                    category != null ? category.getAddress() : null,
+                    (page - 1) * size,
+                    size
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Elasticsearch search failed", e);
+        }
+
+        List<Long> ids = result.getIds();
+        long total = result.getTotalCount();
+
+        log.debug("searchByElasticSearch -> ids={}, total={}", ids, total);
+
+        if (ids == null || ids.isEmpty()) {
+            Page<PostListResponse> emptyPage = new PageImpl<>(
+                    List.<PostListResponse>of(),
+                    PageRequest.of(Math.max(0, page - 1), size),
+                    0L
+            );
+            return new PageDto<>(emptyPage, category);
+        }
+
+        // DB에서 해당 id들 조회
+        List<Post> posts;
+        if (sort == PostSortType.POPULAR) {
+            posts = postRepository.findPopularPostsByIds(ids, POST_POPULAR_LIKE_COUNT);
+        } else {
+            posts = postRepository.findLatestPostsByIds(ids);
+        }
+
+        // createdAt 기준 내림차순으로 정렬하고 DTO로 변환
+        List<PostListResponse> content = posts.stream()
+                .map(PostListResponse::of)
+                .toList();
+
+        Page<PostListResponse> pageImpl = new PageImpl<>(
+                content,
+                PageRequest.of(Math.max(0, page - 1), size),
+                total
+        );
+
+        return new PageDto<>(pageImpl, category);
+    }
+
+    private PageDto<PostListResponse> searchByDatabase(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
         Pageable pageable = createPageable(page, size, sort);
 
         Integer minLikeCount = (sort == PostSortType.POPULAR) ? POST_POPULAR_LIKE_COUNT : null;
