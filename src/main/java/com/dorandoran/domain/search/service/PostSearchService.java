@@ -32,6 +32,11 @@ public class PostSearchService {
 
         log.debug("Elasticsearch search called. searchType={}, keyword={}, category={}, from={}, size={}", searchType, keyword, category, from, size);
 
+        // 준비: 필드 목록
+        String[] titleFields = {"title", "title.nori", "title.ngram", "title.concat"};
+        String[] contentFields = {"content", "content.nori", "content.ngram", "content.concat"};
+        String[] authorFields = {"author", "author.nori", "author.ngram", "author.concat"};
+
         SearchResponse<PostDocument> response;
         try {
             response = elasticsearchClient.search(s -> s
@@ -43,34 +48,40 @@ public class PostSearchService {
                                         if (keyword != null && !keyword.isBlank()) {
                                             String trimmed = keyword.trim();
 
-                                            if (trimmed.length() < 2) {
-                                                // 단일 문자 검색은 ngram/min_gram 때문에 매칭 안 될 수 있으므로 와일드카드로 폴백
-                                                b.must(m -> m
-                                                        .bool(sb -> sb
-                                                                .should(su -> su.wildcard(w -> w.field("title").value("*" + trimmed + "*")))
-                                                                .should(su -> su.wildcard(w -> w.field("content").value("*" + trimmed + "*")))
-                                                                .should(su -> su.wildcard(w -> w.field("author").value("*" + trimmed + "*")))
-                                                        )
-                                                );
-                                            } else {
-                                                // 검색 필드 목록: 원문 필드와 nori/ngram 서브필드
-                                                // NOTE: To match cross-token character fragments like "글제" from "게시글 제목",
-                                                // add a concat-subfield that indexes the field with whitespace removed and ngram-analyzed
-                                                // (e.g., title.concat). You must update the ES index mapping and reindex documents
-                                                // to populate these subfields. Example mapping provided in docs.
-                                                String[] titleFields = {"title", "title.nori", "title.ngram", "title.concat"};
-                                                String[] contentFields = {"content", "content.nori", "content.ngram", "content.concat"};
-                                                String[] authorFields = {"author", "author.nori", "author.ngram", "author.concat"};
-
-                                                String[] fields = Stream.concat(
+                                            // 어떤 필드들을 검색할지 searchType에 따라 결정
+                                            String[] fieldsToSearch;
+                                            if (searchType == null || searchType == SearchType.ALL) {
+                                                fieldsToSearch = Stream.concat(
                                                         Stream.concat(Stream.of(titleFields), Stream.of(contentFields)),
                                                         Stream.of(authorFields)
                                                 ).toArray(String[]::new);
+                                            } else if (searchType == SearchType.TITLE) {
+                                                fieldsToSearch = titleFields;
+                                            } else if (searchType == SearchType.CONTENT) {
+                                                fieldsToSearch = contentFields;
+                                            } else if (searchType == SearchType.AUTHOR) {
+                                                fieldsToSearch = authorFields;
+                                            } else {
+                                                fieldsToSearch = Stream.concat(
+                                                        Stream.concat(Stream.of(titleFields), Stream.of(contentFields)),
+                                                        Stream.of(authorFields)
+                                                ).toArray(String[]::new);
+                                            }
 
+                                            if (trimmed.length() < 2) {
+                                                // 한 글자 검색은 ngram 문제로 와일드카드 폴백 — 대상 필드들에만 적용
+                                                b.must(m -> m.bool(sb -> {
+                                                    for (String f : fieldsToSearch) {
+                                                        sb.should(su -> su.wildcard(w -> w.field(f).value("*" + trimmed + "*")));
+                                                    }
+                                                    return sb;
+                                                }));
+                                            } else {
+                                                // multiMatch를 대상 필드들로 제한
                                                 b.must(m -> m
                                                         .multiMatch(mm -> mm
                                                                 .query(keyword)
-                                                                .fields(List.of(fields))
+                                                                .fields(List.of(fieldsToSearch))
                                                         )
                                                 );
                                             }
