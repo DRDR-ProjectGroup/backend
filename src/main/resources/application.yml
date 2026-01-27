@@ -90,3 +90,4 @@ redis:
 search:
   elastic:
     enabled: true
+    uris: ${DRDR_ES_URL}
