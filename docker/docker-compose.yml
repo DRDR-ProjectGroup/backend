@@ -57,6 +57,35 @@ services:
       timeout: 5s
       retries: 5
 
+  logstash:
+    image: docker.elastic.co/logstash/logstash:9.2.3
+    container_name: doranLogstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ../logs:/logs
+    ports:
+      - "${LOGSTASH_OUT_PORT}:5044"
+    networks:
+      - drdr-network
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.3
+    container_name: doranKibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "${KIBANA_OUT_PORT}:5601"
+    networks:
+      - drdr-network
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
 networks:
   drdr-network:
     driver: bridge
