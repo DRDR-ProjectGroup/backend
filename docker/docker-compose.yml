@@ -86,6 +86,32 @@ services:
       elasticsearch:
         condition: service_healthy
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    networks:
+      - drdr-network
+    ports:
+      - "${PROMETHEUS_OUT_PORT}:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    networks:
+      - drdr-network
+    ports:
+      - "${GRAFANA_OUT_PORT}:3000"
+    environment:
+      - TZ=Asia/Seoul
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
 networks:
   drdr-network:
     driver: bridge
@@ -95,3 +121,4 @@ volumes:
     driver: local
   doran-redis-data:
     driver: local
+  grafana-data:

@@ -91,3 +91,16 @@ search:
   elastic:
     enabled: true
     uris: ${DRDR_ES_URL}
+
+# Prometheus 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
