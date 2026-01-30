@@ -1,6 +1,8 @@
 package com.dorandoran.domain.search.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.dorandoran.domain.search.doc.PostDocument;
 import com.dorandoran.domain.search.dto.SearchResult;
@@ -33,9 +35,9 @@ public class PostSearchService {
         log.debug("Elasticsearch search called. searchType={}, keyword={}, category={}, from={}, size={}", searchType, keyword, category, from, size);
 
         // 준비: 필드 목록
-        String[] titleFields = {"title", "title.nori", "title.ngram", "title.concat"};
-        String[] contentFields = {"content", "content.nori", "content.ngram", "content.concat"};
-        String[] authorFields = {"author", "author.nori", "author.ngram", "author.concat"};
+        String[] titleFields = {"title^5", "title.nori^2", "title.ngram", "title.concat^4"};
+        String[] contentFields = {"content^3", "content.nori^2", "content.ngram", "content.concat"};
+        String[] authorFields = {"author^3", "author.nori^2", "author.ngram", "author.concat"};
 
         SearchResponse<PostDocument> response;
         try {
@@ -82,6 +84,9 @@ public class PostSearchService {
                                                         .multiMatch(mm -> mm
                                                                 .query(keyword)
                                                                 .fields(List.of(fieldsToSearch))
+                                                                .operator(Operator.And)
+                                                                .minimumShouldMatch("75%")
+                                                                .type(TextQueryType.BestFields)
                                                         )
                                                 );
                                             }
