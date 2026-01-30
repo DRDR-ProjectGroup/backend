@@ -2,7 +2,6 @@ package com.dorandoran.domain.search.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
-import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.dorandoran.domain.search.doc.PostDocument;
 import com.dorandoran.domain.search.dto.SearchResult;
@@ -85,8 +84,6 @@ public class PostSearchService {
                                                                 .query(keyword)
                                                                 .fields(List.of(fieldsToSearch))
                                                                 .operator(Operator.And)
-                                                                .minimumShouldMatch("75%")
-                                                                .type(TextQueryType.BestFields)
                                                         )
                                                 );
                                             }
