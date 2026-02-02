@@ -44,3 +44,7 @@ custom:
     allowed-origins:
       - http://localhost:3000
       - http://localhost:8080
+
+post:
+  popular:
+    like-count-threshold: 2

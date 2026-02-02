@@ -58,7 +58,8 @@ public class PostService {
     @Value("${search.elastic.enabled}")
     private boolean elasticEnabled;
 
-    private static final int POST_POPULAR_LIKE_COUNT = 10;
+    @Value("${post.popular.like-count-threshold}")
+    private int POST_POPULAR_LIKE_COUNT;
 
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
