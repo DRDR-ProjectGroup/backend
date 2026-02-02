@@ -44,7 +44,7 @@ services:
     container_name: doranElasticsearch
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - xpack.security.enabled=false
     ports:
       - "${ELASTICSEARCH_OUT_PORT}:9200"
@@ -57,68 +57,10 @@ services:
       timeout: 5s
       retries: 5
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:9.2.3
-    container_name: doranLogstash
-    volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-      - ../logs:/logs
-    ports:
-      - "${LOGSTASH_OUT_PORT}:5044"
-    networks:
-      - drdr-network
-    restart: unless-stopped
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:9.2.3
-    container_name: doranKibana
-    environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-    ports:
-      - "${KIBANA_OUT_PORT}:5601"
-    networks:
-      - drdr-network
-    restart: unless-stopped
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    networks:
-      - drdr-network
-    ports:
-      - "${PROMETHEUS_OUT_PORT}:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    networks:
-      - drdr-network
-    ports:
-      - "${GRAFANA_OUT_PORT}:3000"
-    environment:
-      - TZ=Asia/Seoul
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-    volumes:
-      - grafana-data:/var/lib/grafana
-    restart: unless-stopped
-
 networks:
   drdr-network:
-    driver: bridge
+    external: true
 
 volumes:
   doran-rdb-data:
-    driver: local
   doran-redis-data:
-    driver: local
-  grafana-data:
