@@ -7,10 +7,7 @@ import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
-import com.dorandoran.domain.post.dto.response.PostLikeResponse;
-import com.dorandoran.domain.post.dto.response.PostListResponse;
-import com.dorandoran.domain.post.dto.response.PostMediaResponse;
-import com.dorandoran.domain.post.dto.response.PostResponse;
+import com.dorandoran.domain.post.dto.response.*;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
@@ -109,7 +106,10 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse getPostById(Long postId, String viewerIdentifier) {
+    public PostResponseWithLikeType getPostById(Long postId, String memberId, String guestToken) {
+        // 조회수 처리용 식별자 결정
+        String viewerIdentifier = (memberId != null) ? memberId : guestToken;
+
         // 조회수 증가
         boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
 
@@ -125,7 +125,16 @@ public class PostService {
                 .map(PostMediaResponse::of)
                 .toList();
 
-        return PostResponse.of(post, mediaResponses);
+        if (memberId != null) {
+            Member member = memberService.findMemberByStringId(memberId);
+
+            PostLike postLike = postLikeRepository.findByMemberAndPost(member, post)
+                    .orElse(null);
+
+            return PostResponseWithLikeType.of(post, mediaResponses, postLike);
+        }
+
+        return PostResponseWithLikeType.of(post, mediaResponses, null);
     }
 
     @Transactional
