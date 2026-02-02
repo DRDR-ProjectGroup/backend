@@ -5,6 +5,7 @@ import com.dorandoran.domain.post.dto.request.PostLikeRequest;
 import com.dorandoran.domain.post.dto.response.PostLikeResponse;
 import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
+import com.dorandoran.domain.post.dto.response.PostResponseWithLikeType;
 import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.domain.post.type.PostSortType;
 import com.dorandoran.global.response.BaseResponse;
@@ -48,12 +49,13 @@ public class PostController {
 
     @GetMapping("/{postId}")
     @Operation(summary = "게시글 조회", description = "ID에 해당하는 게시글을 조회합니다.")
-    public BaseResponse<PostResponse> getPost(
+    public BaseResponse<PostResponseWithLikeType> getPost(
             @PathVariable Long postId, Principal principal,
             @CookieValue(name = "GuestToken", required = false) String guestToken
     ) {
-        PostResponse postResponse = postService.getPostById(postId, principal != null ? principal.getName() : guestToken);
-        return BaseResponse.ok(SuccessCode.POST_DETAIL_SUCCESS, postResponse);
+        String memberId = principal != null ? principal.getName() : null;
+        PostResponseWithLikeType postResponseWithLikeType = postService.getPostById(postId, memberId, guestToken);
+        return BaseResponse.ok(SuccessCode.POST_DETAIL_SUCCESS, postResponseWithLikeType);
     }
 
     @PutMapping(path = "/{postId}", consumes = {"multipart/form-data"})

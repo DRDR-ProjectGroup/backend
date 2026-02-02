@@ -7,10 +7,7 @@ import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
-import com.dorandoran.domain.post.dto.response.PostLikeResponse;
-import com.dorandoran.domain.post.dto.response.PostListResponse;
-import com.dorandoran.domain.post.dto.response.PostMediaResponse;
-import com.dorandoran.domain.post.dto.response.PostResponse;
+import com.dorandoran.domain.post.dto.response.*;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
@@ -61,7 +58,8 @@ public class PostService {
     @Value("${search.elastic.enabled}")
     private boolean elasticEnabled;
 
-    private static final int POST_POPULAR_LIKE_COUNT = 10;
+    @Value("${post.popular.like-count-threshold}")
+    private int postPopularLikeCount;
 
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
@@ -109,7 +107,10 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse getPostById(Long postId, String viewerIdentifier) {
+    public PostResponseWithLikeType getPostById(Long postId, String memberId, String guestToken) {
+        // 조회수 처리용 식별자 결정
+        String viewerIdentifier = (memberId != null) ? memberId : guestToken;
+
         // 조회수 증가
         boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
 
@@ -125,7 +126,15 @@ public class PostService {
                 .map(PostMediaResponse::of)
                 .toList();
 
-        return PostResponse.of(post, mediaResponses);
+        PostLike postLike = null;
+        if (memberId != null) {
+            Member member = memberService.findMemberByStringId(memberId);
+
+            postLike = postLikeRepository.findByMemberAndPost(member, post)
+                    .orElse(null);
+        }
+
+        return PostResponseWithLikeType.of(post, mediaResponses, postLike);
     }
 
     @Transactional
@@ -266,7 +275,7 @@ public class PostService {
         // DB에서 해당 id들 조회
         List<Post> posts;
         if (sort == PostSortType.POPULAR) {
-            posts = postRepository.findPopularPostsByIds(ids, POST_POPULAR_LIKE_COUNT);
+            posts = postRepository.findPopularPostsByIds(ids, postPopularLikeCount);
         } else {
             posts = postRepository.findLatestPostsByIds(ids);
         }
@@ -288,7 +297,7 @@ public class PostService {
     private PageDto<PostListResponse> searchByDatabase(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
         Pageable pageable = createPageable(page, size, sort);
 
-        Integer minLikeCount = (sort == PostSortType.POPULAR) ? POST_POPULAR_LIKE_COUNT : null;
+        Integer minLikeCount = (sort == PostSortType.POPULAR) ? postPopularLikeCount : null;
         String effectiveSearchType = (searchType != null) ? searchType.toString() : SearchType.ALL.toString();
         String effectiveKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
 
@@ -332,7 +341,7 @@ public class PostService {
         }
 
         // 추천수가 10이상이 되는 순간 popularAt 설정
-        post.setPopularAt(POST_POPULAR_LIKE_COUNT);
+        post.setPopularAt(postPopularLikeCount);
 
         return PostLikeResponse.of(post);
     }

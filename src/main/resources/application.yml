@@ -104,3 +104,7 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+post:
+  popular:
+    like-count-threshold: 10

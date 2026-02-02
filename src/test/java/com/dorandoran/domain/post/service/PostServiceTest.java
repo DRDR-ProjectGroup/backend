@@ -128,7 +128,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         String memberId = member.getId().toString();
 
         // when // then
-        assertThatThrownBy(() -> postService.getPostById(nonExistentPostId, memberId))
+        assertThatThrownBy(() -> postService.getPostById(nonExistentPostId, memberId, null))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.POST_NOT_FOUND);
@@ -142,8 +142,8 @@ class PostServiceTest extends SpringBootTestSupporter {
         String memberId = member.getId().toString();
 
         // when
-        postService.getPostById(postId, memberId);
-        postService.getPostById(postId, memberId); // 두 번째 조회는 조회수 증가 안됨
+        postService.getPostById(postId, memberId, null);
+        postService.getPostById(postId, memberId, null); // 두 번째 조회는 조회수 증가 안됨
 
         // then
         int viewCount = postRepository.findById(postId).get().getViewCount();
@@ -159,7 +159,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         String memberId = member.getId().toString();
 
         // when // then
-        assertThatThrownBy(() -> postService.getPostById(postId, memberId))
+        assertThatThrownBy(() -> postService.getPostById(postId, memberId, null))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.POST_NOT_FOUND);
