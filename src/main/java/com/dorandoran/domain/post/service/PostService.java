@@ -59,7 +59,7 @@ public class PostService {
     private boolean elasticEnabled;
 
     @Value("${post.popular.like-count-threshold}")
-    private int POST_POPULAR_LIKE_COUNT;
+    private int postPopularLikeCount;
 
     @Transactional
     public PostResponse createPost(String memberId, String categoryName, PostCreateRequest request, List<MultipartFile> files) throws IOException {
@@ -276,7 +276,7 @@ public class PostService {
         // DB에서 해당 id들 조회
         List<Post> posts;
         if (sort == PostSortType.POPULAR) {
-            posts = postRepository.findPopularPostsByIds(ids, POST_POPULAR_LIKE_COUNT);
+            posts = postRepository.findPopularPostsByIds(ids, postPopularLikeCount);
         } else {
             posts = postRepository.findLatestPostsByIds(ids);
         }
@@ -298,7 +298,7 @@ public class PostService {
     private PageDto<PostListResponse> searchByDatabase(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
         Pageable pageable = createPageable(page, size, sort);
 
-        Integer minLikeCount = (sort == PostSortType.POPULAR) ? POST_POPULAR_LIKE_COUNT : null;
+        Integer minLikeCount = (sort == PostSortType.POPULAR) ? postPopularLikeCount : null;
         String effectiveSearchType = (searchType != null) ? searchType.toString() : SearchType.ALL.toString();
         String effectiveKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
 
@@ -342,7 +342,7 @@ public class PostService {
         }
 
         // 추천수가 10이상이 되는 순간 popularAt 설정
-        post.setPopularAt(POST_POPULAR_LIKE_COUNT);
+        post.setPopularAt(postPopularLikeCount);
 
         return PostLikeResponse.of(post);
     }
