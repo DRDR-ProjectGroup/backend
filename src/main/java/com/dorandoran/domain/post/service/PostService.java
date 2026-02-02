@@ -126,16 +126,15 @@ public class PostService {
                 .map(PostMediaResponse::of)
                 .toList();
 
+        PostLike postLike = null;
         if (memberId != null) {
             Member member = memberService.findMemberByStringId(memberId);
 
-            PostLike postLike = postLikeRepository.findByMemberAndPost(member, post)
+            postLike = postLikeRepository.findByMemberAndPost(member, post)
                     .orElse(null);
-
-            return PostResponseWithLikeType.of(post, mediaResponses, postLike);
         }
 
-        return PostResponseWithLikeType.of(post, mediaResponses, null);
+        return PostResponseWithLikeType.of(post, mediaResponses, postLike);
     }
 
     @Transactional
