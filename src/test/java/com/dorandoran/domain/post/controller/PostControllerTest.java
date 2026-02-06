@@ -385,4 +385,24 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.code").value(SuccessCode.POST_NOTICE_SUCCESS.getHttpStatus().value()))
         ;
     }
+
+    @DisplayName("게시글 추천 수 조회")
+    @Test
+    void getPostLikeCount() throws Exception {
+        // given
+        Long postId = post.getId();
+        post.changeLikeCount(5);
+        postRepository.saveAndFlush(post);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/posts/{id}/likecount", postId)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.POST_LIKE_COUNT_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.code").value(SuccessCode.POST_LIKE_COUNT_SUCCESS.getHttpStatus().value()))
+                .andExpect(jsonPath("$.data.likeCount").value(5))
+        ;
+    }
 }

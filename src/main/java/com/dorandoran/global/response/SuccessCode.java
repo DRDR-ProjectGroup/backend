@@ -35,6 +35,7 @@ public enum SuccessCode {
     POST_LIKE_SUCCESS(HttpStatus.OK, "게시글 추천에 성공했습니다."),
     POST_UNLIKE_SUCCESS(HttpStatus.OK, "게시글 비추천에 성공했습니다."),
     POST_NOTICE_SUCCESS(HttpStatus.OK, "공지글 설정 변경에 성공했습니다."),
+    POST_LIKE_COUNT_SUCCESS(HttpStatus.OK, "게시글 추천 수 조회에 성공했습니다."),
 
     // Comment
     COMMENT_CREATE_SUCCESS(HttpStatus.CREATED, "댓글 생성에 성공했습니다."),

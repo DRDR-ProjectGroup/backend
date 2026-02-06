@@ -122,4 +122,13 @@ public class PostController {
         postService.setPostNotice(principal.getName(), postId);
         return BaseResponse.ok(SuccessCode.POST_NOTICE_SUCCESS);
     }
+
+    @GetMapping("/{id}/likecount")
+    @Operation(summary = "게시글 추천수 조회", description = "ID에 해당하는 게시글의 추천수를 조회합니다.")
+    public BaseResponse<PostLikeResponse> getPostLikeCount(
+            @PathVariable Long id
+    ) {
+        PostLikeResponse response = postService.getPostLikeCount(id);
+        return BaseResponse.ok(SuccessCode.POST_LIKE_COUNT_SUCCESS, response);
+    }
 }
