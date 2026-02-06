@@ -170,24 +170,12 @@ public class MemberService {
     public MemberInfoResponse getMemberInfo(String memberId) {
         Member findMember = findMemberByStringId(memberId);
 
-        if (findMember.getStatus() == MemberStatus.DELETED) {
-            throw new CustomException(ErrorCode.MEMBER_DELETED);
-        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
-            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
-        }
-
         return MemberInfoResponse.of(findMember);
     }
 
     @Transactional
     public void modifyNickname(String memberId, NicknameRequest nicknameDto) {
         Member findMember = findMemberByStringId(memberId);
-
-        if (findMember.getStatus() == MemberStatus.DELETED) {
-            throw new CustomException(ErrorCode.MEMBER_DELETED);
-        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
-            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
-        }
 
         // 닉네임 중복 검사
         if (memberRepository.existsByNickname(nicknameDto.getNewNickname())) {
@@ -200,12 +188,6 @@ public class MemberService {
     @Transactional
     public void modifyPassword(String memberId, PasswordRequest passwordDto) {
         Member findMember = findMemberByStringId(memberId);
-
-        if (findMember.getStatus() == MemberStatus.DELETED) {
-            throw new CustomException(ErrorCode.MEMBER_DELETED);
-        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
-            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
-        }
 
         // 현재 비밀번호 확인
         if (!passwordEncoder.matches(passwordDto.getPassword(), findMember.getPassword())) {
@@ -263,12 +245,6 @@ public class MemberService {
     public PageDto<PostListResponse> getMyPosts(String memberId, int page, int size) {
         Member findMember = findMemberByStringId(memberId);
 
-        if (findMember.getStatus() == MemberStatus.DELETED) {
-            throw new CustomException(ErrorCode.MEMBER_DELETED);
-        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
-            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
-        }
-
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
         Page<PostListResponse> postListResponses = postRepository.findAllByMember(findMember, pageable).map(PostListResponse::of);
@@ -279,12 +255,6 @@ public class MemberService {
     @Transactional(readOnly = true)
     public PageCommentDto<CommentListMemberResponse> getMyComments(String memberId, int page, int size) {
         Member findMember = findMemberByStringId(memberId);
-
-        if (findMember.getStatus() == MemberStatus.DELETED) {
-            throw new CustomException(ErrorCode.MEMBER_DELETED);
-        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
-            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
-        }
 
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
@@ -400,12 +370,28 @@ public class MemberService {
 
     public Member findMemberByStringId(String memberId) {
         Long parsedId = Long.valueOf(memberId);
-        return memberRepository.findById(parsedId)
+        Member member = memberRepository.findById(parsedId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (member.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
+
+        return member;
     }
 
     public Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (member.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
+
+        return member;
     }
 }

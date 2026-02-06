@@ -20,8 +20,8 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "현재 비밀번호와 일치합니다."),
     INVALID_LOGIN_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 로그인 요청입니다."),
-    MEMBER_DELETED(HttpStatus.UNAUTHORIZED, "탈퇴된 회원입니다."),
-    MEMBER_BLOCKED(HttpStatus.FORBIDDEN, "차단된 회원입니다."),
+    MEMBER_DELETED(HttpStatus.BAD_REQUEST, "탈퇴된 회원입니다."),
+    MEMBER_BLOCKED(HttpStatus.BAD_REQUEST, "차단된 회원입니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
     PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 
