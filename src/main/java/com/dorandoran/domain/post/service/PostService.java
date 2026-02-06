@@ -362,6 +362,12 @@ public class PostService {
         post.changeNoticeStatus(!notice);
     }
 
+    @Transactional(readOnly = true)
+    public PostLikeResponse getPostLikeCount(Long postId) {
+        Post post = findPostById(postId);
+        return PostLikeResponse.of(post);
+    }
+
     // 파일 타입 확인 메서드
     private MediaType resolveMediaType(MultipartFile file) {
         String contentType = file.getContentType();
