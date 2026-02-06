@@ -154,34 +154,28 @@ public class MemberService {
     }
 
     @Transactional
-    public void logout(String userId) {
-        redisRepository.deleteRefreshToken(userId);
+    public void logout(String memberId) {
+        redisRepository.deleteRefreshToken(memberId);
     }
 
     @Transactional
-    public void resign(String userId) {
-        long id = Long.parseLong(userId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public void resign(String memberId) {
+        Member findMember = findMemberByStringId(memberId);
 
-        redisRepository.deleteRefreshToken(userId);
+        redisRepository.deleteRefreshToken(memberId);
         memberRepository.delete(findMember);
     }
 
     @Transactional(readOnly = true)
-    public MemberInfoResponse getMemberInfo(String userId) {
-        long id = Long.parseLong(userId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public MemberInfoResponse getMemberInfo(String memberId) {
+        Member findMember = findMemberByStringId(memberId);
 
         return MemberInfoResponse.of(findMember);
     }
 
     @Transactional
-    public void modifyNickname(String userId, NicknameRequest nicknameDto) {
-        long id = Long.parseLong(userId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public void modifyNickname(String memberId, NicknameRequest nicknameDto) {
+        Member findMember = findMemberByStringId(memberId);
 
         // 닉네임 중복 검사
         if (memberRepository.existsByNickname(nicknameDto.getNewNickname())) {
@@ -192,10 +186,8 @@ public class MemberService {
     }
 
     @Transactional
-    public void modifyPassword(String userId, PasswordRequest passwordDto) {
-        long id = Long.parseLong(userId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public void modifyPassword(String memberId, PasswordRequest passwordDto) {
+        Member findMember = findMemberByStringId(memberId);
 
         // 현재 비밀번호 확인
         if (!passwordEncoder.matches(passwordDto.getPassword(), findMember.getPassword())) {
@@ -251,9 +243,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public PageDto<PostListResponse> getMyPosts(String memberId, int page, int size) {
-        long id = Long.parseLong(memberId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Member findMember = findMemberByStringId(memberId);
 
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
@@ -264,9 +254,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public PageCommentDto<CommentListMemberResponse> getMyComments(String memberId, int page, int size) {
-        long id = Long.parseLong(memberId);
-        Member findMember = memberRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Member findMember = findMemberByStringId(memberId);
 
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
@@ -327,20 +315,20 @@ public class MemberService {
     }
 
     // JWT access token, refresh token 생성
-    private MemberTokenResponse generateMemberTokens(String role, String userId) {
-        String access = jwtUtil.createJwt(ACCESS_TOKEN_CATEGORY, userId, role,
+    private MemberTokenResponse generateMemberTokens(String role, String memberId) {
+        String access = jwtUtil.createJwt(ACCESS_TOKEN_CATEGORY, memberId, role,
                 jwtProperties.getAccessExpiration());
-        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_CATEGORY, userId, role,
+        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_CATEGORY, memberId, role,
                 jwtProperties.getRefreshExpiration());
 
-        saveRefreshTokenRedis(userId, refresh, jwtProperties.getRefreshExpiration());
+        saveRefreshTokenRedis(memberId, refresh, jwtProperties.getRefreshExpiration());
 
         return MemberTokenResponse.of(access, refresh);
     }
 
     // Redis 에 refresh token 저장
-    private void saveRefreshTokenRedis(String userId, String refreshToken, Long expirationMs) {
-        redisRepository.saveRefreshToken(userId, refreshToken, expirationMs);
+    private void saveRefreshTokenRedis(String memberId, String refreshToken, Long expirationMs) {
+        redisRepository.saveRefreshToken(memberId, refreshToken, expirationMs);
     }
 
     // 중복 회원 검증
@@ -382,12 +370,20 @@ public class MemberService {
 
     public Member findMemberByStringId(String memberId) {
         Long parsedId = Long.valueOf(memberId);
-        return memberRepository.findById(parsedId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return findMemberById(parsedId);
     }
 
     public Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (member.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
+
+        return member;
     }
 }
