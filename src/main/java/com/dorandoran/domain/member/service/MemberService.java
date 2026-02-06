@@ -174,6 +174,12 @@ public class MemberService {
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
+        if (findMember.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
+
         return MemberInfoResponse.of(findMember);
     }
 
@@ -182,6 +188,12 @@ public class MemberService {
         long id = Long.parseLong(userId);
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (findMember.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
 
         // 닉네임 중복 검사
         if (memberRepository.existsByNickname(nicknameDto.getNewNickname())) {
@@ -196,6 +208,12 @@ public class MemberService {
         long id = Long.parseLong(userId);
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (findMember.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
 
         // 현재 비밀번호 확인
         if (!passwordEncoder.matches(passwordDto.getPassword(), findMember.getPassword())) {
@@ -255,6 +273,12 @@ public class MemberService {
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
+        if (findMember.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
+
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
         Page<PostListResponse> postListResponses = postRepository.findAllByMember(findMember, pageable).map(PostListResponse::of);
@@ -267,6 +291,12 @@ public class MemberService {
         long id = Long.parseLong(memberId);
         Member findMember = memberRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (findMember.getStatus() == MemberStatus.DELETED) {
+            throw new CustomException(ErrorCode.MEMBER_DELETED);
+        } else if (findMember.getStatus() == MemberStatus.BLOCKED) {
+            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
+        }
 
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.desc("createdAt")));
 
