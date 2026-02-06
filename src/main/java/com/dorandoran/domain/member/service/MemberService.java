@@ -370,16 +370,8 @@ public class MemberService {
 
     public Member findMemberByStringId(String memberId) {
         Long parsedId = Long.valueOf(memberId);
-        Member member = memberRepository.findById(parsedId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        if (member.getStatus() == MemberStatus.DELETED) {
-            throw new CustomException(ErrorCode.MEMBER_DELETED);
-        } else if (member.getStatus() == MemberStatus.BLOCKED) {
-            throw new CustomException(ErrorCode.MEMBER_BLOCKED);
-        }
-
-        return member;
+        return findMemberById(parsedId);
     }
 
     public Member findMemberById(Long memberId) {
