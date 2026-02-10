@@ -69,4 +69,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                           p.createdAt DESC
             """)
     List<Post> findPopularPostsByIds(List<Long> ids, Integer minLikeCount);
+
+    List<Post> findByIsNoticeTrue();
+
+    List<Post> findByCategoryAndIsNoticeTrue(Category category);
 }
