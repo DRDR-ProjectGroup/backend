@@ -292,11 +292,12 @@ public class MemberService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Member targetMember = findMemberById(targetMemberId);
+        Member targetMember = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 타겟 멤버가 관리자일 경우 예외 처리
         if (targetMember.isAdmin()) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
+            throw new CustomException(ErrorCode.ADMIN_NOT_CHAENGEABLE);
         }
 
         // 현재 상태와 요청 상태가 같으면 예외 처리

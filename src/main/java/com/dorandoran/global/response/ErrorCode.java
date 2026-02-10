@@ -62,6 +62,7 @@ public enum ErrorCode {
     CATEGORY_GROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 그룹입니다."),
     MEMBER_STATUS_SAME(HttpStatus.BAD_REQUEST, "변경하려는 상태가 현재 상태와 동일합니다."),
     ADMIN_CANNOT_DELETE(HttpStatus.BAD_REQUEST, "탈퇴는 시킬 수 없습니다."),
+    ADMIN_NOT_CHAENGEABLE(HttpStatus.BAD_REQUEST, "관리자 권한은 변경할 수 없습니다."),
 
     // Common 오류,
     VALIDATION_FAIL_ERROR(HttpStatus.BAD_REQUEST, "(exception error 메세지에 따름)"),
