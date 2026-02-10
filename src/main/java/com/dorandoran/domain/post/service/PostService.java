@@ -25,7 +25,7 @@ import com.dorandoran.domain.search.service.PostSearchService;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
-import com.dorandoran.standard.page.dto.PageDto;
+import com.dorandoran.standard.page.dto.PageWithNoticeDto;
 import com.dorandoran.standard.search.SearchType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -224,7 +224,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<PostListResponse> getPostsByCategory(String categoryName, SearchType searchType, String keyword, int page, int size, PostSortType sort) {
+    public PageWithNoticeDto<PostListResponse> getPostsByCategory(String categoryName, SearchType searchType, String keyword, int page, int size, PostSortType sort) {
         Category category = null;
 
         if (categoryName != null) {
@@ -242,7 +242,8 @@ public class PostService {
         return searchByDatabase(searchType, keyword, page, size, sort, category);
     }
 
-    private PageDto<PostListResponse> searchByElasticSearch(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
+    private PageWithNoticeDto<PostListResponse> searchByElasticSearch(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
+        List<PostListResponse> notices = List.of();
         // ES에서 id 목록과 총건수를 받아온다
         SearchResult result;
 
@@ -269,7 +270,7 @@ public class PostService {
                     PageRequest.of(Math.max(0, page - 1), size),
                     0L
             );
-            return new PageDto<>(emptyPage, category);
+            return new PageWithNoticeDto<>(emptyPage, category, notices);
         }
 
         // DB에서 해당 id들 조회
@@ -291,11 +292,12 @@ public class PostService {
                 total
         );
 
-        return new PageDto<>(pageImpl, category);
+        return new PageWithNoticeDto<>(pageImpl, category, notices);
     }
 
-    private PageDto<PostListResponse> searchByDatabase(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
+    private PageWithNoticeDto<PostListResponse> searchByDatabase(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
         Pageable pageable = createPageable(page, size, sort);
+        log.debug("category = {}", category);
 
         Integer minLikeCount = (sort == PostSortType.POPULAR) ? postPopularLikeCount : null;
         String effectiveSearchType = (searchType != null) ? searchType.toString() : SearchType.ALL.toString();
@@ -305,7 +307,22 @@ public class PostService {
 
         Page<PostListResponse> dtoPage = postsPage.map(PostListResponse::of);
 
-        return new PageDto<>(dtoPage, category);
+        List<PostListResponse> notices = List.of();
+        if (page == 1) {
+            notices = postRepository.findByCategoryAndIsNoticeTrue(category).stream()
+                    .map(PostListResponse::of)
+                    .toList();
+
+            if (category == null) {
+                notices = postRepository.findByIsNoticeTrue().stream()
+                        .map(PostListResponse::of)
+                        .toList();
+            }
+        }
+
+        log.debug("notices = {}", notices);
+
+        return new PageWithNoticeDto<>(dtoPage, category, notices);
     }
 
     @Transactional
