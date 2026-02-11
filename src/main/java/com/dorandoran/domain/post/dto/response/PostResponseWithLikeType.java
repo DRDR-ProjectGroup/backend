@@ -3,8 +3,6 @@ package com.dorandoran.domain.post.dto.response;
 import com.dorandoran.domain.category.dto.response.CategoryResponse;
 import com.dorandoran.domain.member.dto.response.AuthorResponse;
 import com.dorandoran.domain.post.entity.Post;
-import com.dorandoran.domain.post.entity.PostLike;
-import com.dorandoran.domain.post.type.LikeType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,9 +26,8 @@ public class PostResponseWithLikeType {
     private List<PostMediaResponse> mediaList;
     private boolean isNotice;
     private LocalDateTime createdAt;
-    private LikeType memberLikeType;
 
-    public static PostResponseWithLikeType of(Post post, List<PostMediaResponse> mediaList, PostLike postLike) {
+    public static PostResponseWithLikeType of(Post post, List<PostMediaResponse> mediaList) {
         return PostResponseWithLikeType.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
@@ -42,7 +39,6 @@ public class PostResponseWithLikeType {
                 .mediaList(mediaList)
                 .isNotice(post.isNotice())
                 .createdAt(post.getCreatedAt())
-                .memberLikeType(postLike != null ? postLike.getLikeType() : null)
                 .build();
 
     }

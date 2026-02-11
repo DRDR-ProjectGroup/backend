@@ -126,15 +126,7 @@ public class PostService {
                 .map(PostMediaResponse::of)
                 .toList();
 
-        PostLike postLike = null;
-        if (memberId != null) {
-            Member member = memberService.findMemberByStringId(memberId);
-
-            postLike = postLikeRepository.findByMemberAndPost(member, post)
-                    .orElse(null);
-        }
-
-        return PostResponseWithLikeType.of(post, mediaResponses, postLike);
+        return PostResponseWithLikeType.of(post, mediaResponses);
     }
 
     @Transactional
@@ -336,8 +328,6 @@ public class PostService {
         // 추천 로직 구현
         Optional<PostLike> existPostLike = postLikeRepository.findByMemberAndPost(member, post);
 
-        PostLike postLike;
-
         if (existPostLike.isEmpty()) {
             // 새로운 추천 생성
             postLikeRepository.save(PostLike.of(member, post, request.getLikeType()));
@@ -360,7 +350,10 @@ public class PostService {
         // 추천수가 10이상이 되는 순간 popularAt 설정
         post.setPopularAt(postPopularLikeCount);
 
-        return PostLikeResponse.of(post);
+        PostLike postLike = postLikeRepository.findByMemberAndPost(member, post)
+                .orElse(null);
+
+        return PostLikeResponse.of(post, postLike);
     }
 
     @Transactional
@@ -380,9 +373,20 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostLikeResponse getPostLikeCount(Long postId) {
+    public PostLikeResponse getPostLikeCount(Long postId, String memberId) {
         Post post = findPostById(postId);
-        return PostLikeResponse.of(post);
+
+        PostLike postLike = null;
+
+        if (memberId != null) {
+            Member member = memberService.findMemberByStringId(memberId);
+            postLike = postLikeRepository.findByMemberAndPost(member, post)
+                    .orElse(null);
+        }
+
+        log.debug("postlike = {}", postLike);
+
+        return PostLikeResponse.of(post, postLike);
     }
 
     // 파일 타입 확인 메서드
