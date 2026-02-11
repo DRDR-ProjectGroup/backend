@@ -126,9 +126,11 @@ public class PostController {
     @GetMapping("/{id}/likecount")
     @Operation(summary = "게시글 추천수 조회", description = "ID에 해당하는 게시글의 추천수를 조회합니다.")
     public BaseResponse<PostLikeResponse> getPostLikeCount(
-            @PathVariable Long id
+            @PathVariable Long id,
+            Principal principal
     ) {
-        PostLikeResponse response = postService.getPostLikeCount(id);
+        String memberId = principal != null ? principal.getName() : null;
+        PostLikeResponse response = postService.getPostLikeCount(id, memberId);
         return BaseResponse.ok(SuccessCode.POST_LIKE_COUNT_SUCCESS, response);
     }
 }
