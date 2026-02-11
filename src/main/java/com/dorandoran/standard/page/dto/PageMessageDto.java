@@ -7,11 +7,11 @@ import java.util.List;
 
 @Getter
 public class PageMessageDto<T> {
-    private long totalCount;
-    private int pageSize;
-    private long totalPages;
-    private int currentPage;
-    private List<T> messages;
+    private final long totalCount;
+    private final int pageSize;
+    private final long totalPages;
+    private final int currentPage;
+    private final List<T> messages;
 
     public PageMessageDto(Page<T> page) {
         this.totalCount = page.getTotalElements();

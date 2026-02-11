@@ -8,13 +8,13 @@ import java.util.List;
 
 @Getter
 public class PageWithNoticeDto<T> {
-    private long totalCount;
-    private int pageSize;
-    private long totalPages;
-    private int currentPage;
-    private String category;
-    private List<T> notices;
-    private List<T> posts;
+    private final long totalCount;
+    private final int pageSize;
+    private final long totalPages;
+    private final int currentPage;
+    private final String category;
+    private final List<T> notices;
+    private final List<T> posts;
 
     public PageWithNoticeDto(Page<T> page, Category category, List<T> notices) {
         this.totalCount = page.getTotalElements();
