@@ -254,8 +254,6 @@ public class PostService {
         List<Long> ids = result.getIds();
         long total = result.getTotalCount();
 
-        log.debug("searchByElasticSearch -> ids={}, total={}", ids, total);
-
         if (ids == null || ids.isEmpty()) {
             Page<PostListResponse> emptyPage = new PageImpl<>(
                     List.<PostListResponse>of(),
@@ -289,7 +287,6 @@ public class PostService {
 
     private PageWithNoticeDto<PostListResponse> searchByDatabase(SearchType searchType, String keyword, int page, int size, PostSortType sort, Category category) {
         Pageable pageable = createPageable(page, size, sort);
-        log.debug("category = {}", category);
 
         Integer minLikeCount = (sort == PostSortType.POPULAR) ? postPopularLikeCount : null;
         String effectiveSearchType = (searchType != null) ? searchType.toString() : SearchType.ALL.toString();
@@ -311,8 +308,6 @@ public class PostService {
                         .toList();
             }
         }
-
-        log.debug("notices = {}", notices);
 
         return new PageWithNoticeDto<>(dtoPage, category, notices);
     }
@@ -383,8 +378,6 @@ public class PostService {
             postLike = postLikeRepository.findByMemberAndPost(member, post)
                     .orElse(null);
         }
-
-        log.debug("postlike = {}", postLike);
 
         return PostLikeResponse.of(post, postLike);
     }

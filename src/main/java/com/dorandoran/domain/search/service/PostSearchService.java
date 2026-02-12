@@ -30,9 +30,6 @@ public class PostSearchService {
             int from,
             int size
     ) throws IOException {
-
-        log.debug("Elasticsearch search called. searchType={}, keyword={}, category={}, from={}, size={}", searchType, keyword, category, from, size);
-
         // 준비: 필드 목록
         String[] titleFields = {"title^5", "title.nori^2", "title.ngram", "title.concat^4"};
         String[] contentFields = {"content^3", "content.nori^2", "content.ngram", "content.concat"};
@@ -134,8 +131,6 @@ public class PostSearchService {
         } else {
             total = ids.size();
         }
-
-        log.debug("Elasticsearch search result: ids={}, total={}", ids, total);
 
         return new SearchResult(ids, total);
     }
