@@ -31,8 +31,13 @@ public class GuestTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 1. 로그인 하지 않은 사용자인지 확인
         String accessToken = FilterUtil.extractAccessToken(request);
+        String refreshToken = Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(cookie -> "RefreshToken".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
 
-        if (accessToken != null && jwtUtil.isValidAccessToken(accessToken)) {
+        if (accessToken != null && jwtUtil.isValidAccessToken(accessToken) || refreshToken != null) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,5 +63,10 @@ public class GuestTokenFilter extends OncePerRequestFilter {
         );
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getRequestURI().equals("/api/v1/auth/reissue");
     }
 }
