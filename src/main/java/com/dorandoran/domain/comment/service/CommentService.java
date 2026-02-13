@@ -2,6 +2,7 @@ package com.dorandoran.domain.comment.service;
 
 import com.dorandoran.domain.comment.dto.request.CommentModifyRequest;
 import com.dorandoran.domain.comment.dto.request.CommentRequest;
+import com.dorandoran.domain.comment.dto.response.CommentCountResponse;
 import com.dorandoran.domain.comment.dto.response.CommentListResponse;
 import com.dorandoran.domain.comment.entity.Comment;
 import com.dorandoran.domain.comment.repository.CommentRepository;
@@ -130,5 +131,12 @@ public class CommentService {
         }
 
         return comment;
+    }
+
+    @Transactional(readOnly = true)
+    public CommentCountResponse getCommentCount(Long postId) {
+        Post post = postService.findPostById(postId);
+
+        return CommentCountResponse.of(post);
     }
 }
