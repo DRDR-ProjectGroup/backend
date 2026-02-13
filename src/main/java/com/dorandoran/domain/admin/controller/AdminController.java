@@ -13,6 +13,7 @@ import com.dorandoran.standard.page.dto.PageMemberDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,7 +37,7 @@ public class AdminController {
     @Operation(summary = "카테고리 그룹 생성", description = "새로운 카테고리 그룹을 생성합니다.")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> createCategoryGroup(
-            @RequestBody CategoryGroupRequest request,
+            @Valid @RequestBody CategoryGroupRequest request,
             Principal principal
     ) {
         log.info("Admin '{}' is creating a new category group with name '{}'", principal.getName(), request.getGroupName());
@@ -49,7 +50,7 @@ public class AdminController {
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> updateCategoryGroup(
             @PathVariable Long groupId,
-            @RequestBody CategoryGroupRequest request,
+            @Valid @RequestBody CategoryGroupRequest request,
             Principal principal
     ) {
         log.info("Admin '{}' is modifying category group ID '{}' to new name '{}'", principal.getName(), groupId, request.getGroupName());
@@ -73,7 +74,7 @@ public class AdminController {
     @Operation(summary = "카테고리 생성", description = "새로운 카테고리를 생성합니다.")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> createCategory(
-            @RequestBody CategoryRequest request,
+            @Valid @RequestBody CategoryRequest request,
             Principal principal
     ) {
         log.info("Admin '{}' is creating a new category with name '{}'", principal.getName(), request.getCategoryName());
@@ -86,7 +87,7 @@ public class AdminController {
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> modifyCategory(
             @PathVariable Long categoryId,
-            @RequestBody CategoryRequest request,
+            @Valid @RequestBody CategoryRequest request,
             Principal principal
     ) {
         log.info("Admin '{}' is modifying category ID '{}' to new name '{}'", principal.getName(), categoryId, request.getCategoryName());
@@ -123,7 +124,7 @@ public class AdminController {
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> setMemberStatus(
             @PathVariable Long memberId,
-            @RequestBody MemberStatusRequest request,
+            @Valid @RequestBody MemberStatusRequest request,
             Principal principal
     ) {
         log.info("Admin '{}' is changing status of member ID '{}' to '{}'", principal.getName(), memberId, request.getStatus());
