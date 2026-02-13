@@ -297,7 +297,7 @@ public class PostService {
         Page<PostListResponse> dtoPage = postsPage.map(PostListResponse::of);
 
         List<PostListResponse> notices = List.of();
-        if (page == 1 && keyword == null) {
+        if (page == 1 && effectiveKeyword == null) {
             notices = postRepository.findByCategoryAndIsNoticeTrue(category).stream()
                     .map(PostListResponse::of)
                     .toList();
