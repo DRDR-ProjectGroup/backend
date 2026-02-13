@@ -136,7 +136,10 @@ public class CommentService {
     @Transactional(readOnly = true)
     public CommentCountResponse getCommentCount(Long postId) {
         Post post = postService.findPostById(postId);
-
-        return CommentCountResponse.of(post);
+        Long CommentCount = commentRepository.countByPost(post);
+        return CommentCountResponse.builder()
+                .postId(postId)
+                .commentCount(CommentCount.intValue())
+                .build();
     }
 }

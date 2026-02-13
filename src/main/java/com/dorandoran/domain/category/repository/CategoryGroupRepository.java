@@ -3,6 +3,7 @@ package com.dorandoran.domain.category.repository;
 import com.dorandoran.domain.category.entity.CategoryGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CategoryGroupRepository extends JpaRepository<CategoryGroup, Long> {
@@ -10,4 +11,6 @@ public interface CategoryGroupRepository extends JpaRepository<CategoryGroup, Lo
     Optional<CategoryGroup> findByName(String name);
 
     boolean existsByName(String groupName);
+
+    List<CategoryGroup> findByDeletedAtIsNull();
 }

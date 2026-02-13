@@ -32,18 +32,14 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryGroupResponse> getCategories() {
-        List<Category> categories = categoryRepository.findAll().stream()
-                .filter(category -> category.getDeletedAt() == null)
-                .toList();
+        List<Category> categories = categoryRepository.findByDeletedAtIsNull();
 
         Map<Long, List<Category>> categoryMap = categories.stream()
                 .collect(Collectors.groupingBy(
                         category -> category.getGroup().getId()
                 ));
 
-        List<CategoryGroup> groups = categoryGroupRepository.findAll().stream()
-                .filter(categoryGroup -> categoryGroup.getDeletedAt() == null)
-                .toList();
+        List<CategoryGroup> groups = categoryGroupRepository.findByDeletedAtIsNull();
 
         List<CategoryGroupResponse> responses = groups.stream()
                 .map(group -> {
@@ -96,9 +92,7 @@ public class CategoryService {
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_GROUP_NOT_FOUND));
 
         // 카테고리의 deletedAt이 null인 것들만 조회
-        List<Category> categories = categoryRepository.findByGroupId(groupId).stream()
-                .filter(category -> category.getDeletedAt() == null)
-                .toList();
+        List<Category> categories = categoryRepository.findByGroupIdAndDeletedAtIsNull(groupId);
 
         if (!categories.isEmpty()) {
             throw new CustomException(ErrorCode.CATEGORY_GROUP_DELETE_FAIL_HAS_CATEGORIES);

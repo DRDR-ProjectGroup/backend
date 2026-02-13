@@ -16,4 +16,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByName(String categoryName);
 
     boolean existsByAddress(String categoryAddress);
+
+    List<Category> findByDeletedAtIsNull();
+
+    List<Category> findByGroupIdAndDeletedAtIsNull(Long groupId);
 }
