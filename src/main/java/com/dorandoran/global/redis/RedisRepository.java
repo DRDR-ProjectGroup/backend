@@ -18,7 +18,7 @@ public class RedisRepository {
 
     public void saveRefreshToken(String userId, String refreshToken, long expiredTime) {
         String key = keyGenerator(userId);
-        save(key, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
+        save(key, refreshToken, expiredTime, TimeUnit.SECONDS);
     }
 
     public String getRefreshToken(String userId) {

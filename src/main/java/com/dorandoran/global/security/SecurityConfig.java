@@ -28,7 +28,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_HEADER;
-import static com.dorandoran.global.jwt.JWTConstant.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.GET;
 
 @Configuration
@@ -59,7 +58,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
         configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
         configuration.setAllowedMethods(List.of("*"));
-        configuration.setAllowedHeaders(List.of(ACCESS_TOKEN_HEADER, CONTENT_TYPE));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of(ACCESS_TOKEN_HEADER));
         configuration.setMaxAge(3600L);
 

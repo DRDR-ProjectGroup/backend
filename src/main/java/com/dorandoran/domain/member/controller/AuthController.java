@@ -109,7 +109,7 @@ public class AuthController {
         ControllerUt.addCookie(
                 REFRESH_TOKEN_HEADER,
                 newRefreshToken,
-                ControllerUt.parseMsToSec(jwtProperties.getRefreshExpiration()),
+                (int) jwtProperties.getRefreshExpiration(),
                 response);
 
         return BaseResponse.ok(TOKEN_REISSUE_SUCCESS);
