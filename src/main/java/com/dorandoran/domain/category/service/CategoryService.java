@@ -14,7 +14,6 @@ import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +32,18 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryGroupResponse> getCategories() {
-        List<Category> categories = categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findAll().stream()
+                .filter(category -> category.getDeletedAt() == null)
+                .toList();
 
         Map<Long, List<Category>> categoryMap = categories.stream()
                 .collect(Collectors.groupingBy(
                         category -> category.getGroup().getId()
                 ));
 
-        List<CategoryGroup> groups = categoryGroupRepository.findAll();
+        List<CategoryGroup> groups = categoryGroupRepository.findAll().stream()
+                .filter(categoryGroup -> categoryGroup.getDeletedAt() == null)
+                .toList();
 
         List<CategoryGroupResponse> responses = groups.stream()
                 .map(group -> {
@@ -92,13 +95,16 @@ public class CategoryService {
         CategoryGroup categoryGroup = categoryGroupRepository.findById(groupId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_GROUP_NOT_FOUND));
 
-        List<Category> categories = categoryRepository.findByGroupId(groupId);
+        // 카테고리의 deletedAt이 null인 것들만 조회
+        List<Category> categories = categoryRepository.findByGroupId(groupId).stream()
+                .filter(category -> category.getDeletedAt() == null)
+                .toList();
 
         if (!categories.isEmpty()) {
             throw new CustomException(ErrorCode.CATEGORY_GROUP_DELETE_FAIL_HAS_CATEGORIES);
         }
 
-        categoryGroupRepository.delete(categoryGroup);
+        categoryGroup.setDeletedAt();
     }
 
     @Transactional
@@ -142,11 +148,11 @@ public class CategoryService {
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
         // 카테고리에 게시글이 있으면 삭제 불가
-        if (postService.existsPostByCategoryId(categoryId)) {
+        if (postService.existsNotDeletedPostByCategoryId(categoryId)) {
             throw new CustomException(ErrorCode.CATEGORY_DELETE_FAIL_HAS_POSTS);
         }
 
-        categoryRepository.delete(category);
+        category.setDeletedAt();
     }
 
     private void validateAdmin(String memberId) {
@@ -156,6 +162,4 @@ public class CategoryService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
-
-    private final GroupedOpenApi groupApi;
 }

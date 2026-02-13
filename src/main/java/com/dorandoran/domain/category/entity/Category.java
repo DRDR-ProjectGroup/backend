@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,6 +23,8 @@ public class Category extends BaseTime {
 
     @Column(nullable = false)
     private String address;
+
+    private LocalDateTime deletedAt;
 
     @Builder
     private Category(CategoryGroup group, String name, String address) {
@@ -41,5 +45,9 @@ public class Category extends BaseTime {
         this.group = group;
         this.name = name;
         this.address = address;
+    }
+
+    public void setDeletedAt() {
+        this.deletedAt = LocalDateTime.now();
     }
 }

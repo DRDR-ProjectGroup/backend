@@ -73,4 +73,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByIsNoticeTrue();
 
     List<Post> findByCategoryAndIsNoticeTrue(Category category);
+
+    boolean existsByCategoryIdAndDeletedAtIsNull(Long categoryId);
 }
