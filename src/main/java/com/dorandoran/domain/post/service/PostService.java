@@ -297,7 +297,7 @@ public class PostService {
         Page<PostListResponse> dtoPage = postsPage.map(PostListResponse::of);
 
         List<PostListResponse> notices = List.of();
-        if (page == 1) {
+        if (page == 1 && effectiveKeyword == null) {
             notices = postRepository.findByCategoryAndIsNoticeTrue(category).stream()
                     .map(PostListResponse::of)
                     .toList();
@@ -450,7 +450,7 @@ public class PostService {
         return PageRequest.of(Math.max(0, page - 1), size, sortCondition);
     }
 
-    public boolean existsPostByCategoryId(Long categoryId) {
-        return postRepository.existsByCategoryId(categoryId);
+    public boolean existsNotDeletedPostByCategoryId(Long categoryId) {
+        return postRepository.existsByCategoryIdAndDeletedAtIsNull(categoryId);
     }
 }

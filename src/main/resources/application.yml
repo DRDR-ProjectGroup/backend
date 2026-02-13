@@ -89,7 +89,7 @@ redis:
 
 search:
   elastic:
-    enabled: true
+    enabled: false
     uris: ${DRDR_ES_URL}
 
 # Prometheus 설정

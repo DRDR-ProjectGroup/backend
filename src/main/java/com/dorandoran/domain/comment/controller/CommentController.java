@@ -2,6 +2,7 @@ package com.dorandoran.domain.comment.controller;
 
 import com.dorandoran.domain.comment.dto.request.CommentModifyRequest;
 import com.dorandoran.domain.comment.dto.request.CommentRequest;
+import com.dorandoran.domain.comment.dto.response.CommentCountResponse;
 import com.dorandoran.domain.comment.dto.response.CommentListResponse;
 import com.dorandoran.domain.comment.service.CommentService;
 import com.dorandoran.global.response.BaseResponse;
@@ -74,5 +75,14 @@ public class CommentController {
         log.info("Deleting commentId: {} for postId: {}, by user: {}", commentId, postId, principal.getName());
         commentService.deleteComment(postId, commentId, principal.getName());
         return BaseResponse.ok(SuccessCode.COMMENT_DELETE_SUCCESS);
+    }
+
+    @GetMapping("/count")
+    @Operation(summary = "댓글 개수 조회")
+    public BaseResponse<CommentCountResponse> getCommentCount(
+            @PathVariable Long postId
+    ) {
+        CommentCountResponse commentCount = commentService.getCommentCount(postId);
+        return BaseResponse.ok(SuccessCode.COMMENT_COUNT_READ_SUCCESS, commentCount);
     }
 }

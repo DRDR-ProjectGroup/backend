@@ -42,6 +42,7 @@ public enum SuccessCode {
     COMMENT_LIST_READ_SUCCESS(HttpStatus.OK, "댓글 목록 조회에 성공했습니다."),
     COMMENT_MODIFY_SUCCESS(HttpStatus.OK, "댓글 수정에 성공했습니다."),
     COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제에 성공했습니다."),
+    COMMENT_COUNT_READ_SUCCESS(HttpStatus.OK, "댓글 개수 조회에 성공했습니다."),
 
     // Message
     MESSAGE_SEND_SUCCESS(HttpStatus.CREATED, "메세지 전송에 성공했습니다."),
