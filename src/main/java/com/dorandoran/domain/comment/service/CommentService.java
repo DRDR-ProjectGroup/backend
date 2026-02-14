@@ -46,88 +46,41 @@ public class CommentService {
     public PageCommentDto<CommentListResponse> getComments(Long postId, int page, int size) {
         Post post = postService.findPostById(postId);
 
-        // 응답에 사용할 pageable (0-based page 인덱스 사용)
-        Pageable responsePageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("createdAt")));
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("createdAt")));
 
-        // 1) 게시글의 모든 댓글을 한 번에 가져와서 트리 구성용 매핑 생성
+        // 1. 부모 댓글 (0depth) 페이징 조회
+        Page<Comment> parentPage = commentRepository.findByPostAndDepth(post, 0, pageable);
+        List<Comment> parents = parentPage.getContent();
+
+        // 부모 댓글이 없으면 (댓글이 없으면) 빈 페이지 반환
+        if (parents.isEmpty()) {
+            return new PageCommentDto<>(parentPage.map(comment -> CommentListResponse.of(comment, Collections.emptyList())));
+        }
+
+        // 2. 게시글의 모든 댓글을 한 번에 가져와서 메모리에서 트리 구성 (N+1 방지)
         List<Comment> allComments = commentRepository.findAllByPost(post);
 
-        if (allComments.isEmpty()) {
-            Page<CommentListResponse> empty = new PageImpl<>(Collections.emptyList(), responsePageable, 0);
-            return new PageCommentDto<>(empty);
-        }
-
-        // 2) 부모-자식 매핑 생성
+        // 3. 부모-자식 매핑 생성
         Map<Long, List<Comment>> childrenMap = new HashMap<>();
-        for (Comment c : allComments) {
-            if (c.getParentComment() != null) {
-                Long pid = c.getParentComment().getId();
-                childrenMap.computeIfAbsent(pid, k -> new ArrayList<>()).add(c);
+
+        for (Comment comment : allComments) {
+            // 부모 댓글이 있는 경우에만 매핑 추가
+            if (comment.getParentComment() != null) {
+                // 자식 댓글에서 부모 댓글 ID 얻기
+                Long parentCommentId = comment.getParentComment().getId();
+
+                // 부모 ID를 키로 자식 댓글 리스트에 추가 (없으면 빈 리스트 생성)
+                childrenMap.computeIfAbsent(parentCommentId, key -> new ArrayList<>()).add(comment);
             }
         }
 
-        // 3) 최상위 부모(루트) 리스트 생성 및 정렬
-        List<Comment> topParents = allComments.stream()
-                .filter(c -> c.getParentComment() == null)
-                .sorted(Comparator.comparing(Comment::getCreatedAt))
-                .toList();
-
-        // 4) 전위 순회로 평탄화
-        List<Comment> flatList = new ArrayList<>();
-        for (Comment root : topParents) {
-            flattenPreOrder(root, childrenMap, flatList);
-        }
-
-        int total = flatList.size();
-        int requestedPage = Math.max(1, page);
-        int offset = Math.max(0, requestedPage - 1) * size;
-
-        if (offset >= total) {
-            Page<CommentListResponse> empty = new PageImpl<>(Collections.emptyList(), responsePageable, total);
-            return new PageCommentDto<>(empty);
-        }
-
-        int start = offset;
-        int end = Math.min(offset + size, total);
-
-        // 인덱스 맵 생성
-        Map<Long, Integer> indexById = new HashMap<>();
-        for (int i = 0; i < flatList.size(); i++) {
-            indexById.put(flatList.get(i).getId(), i);
-        }
-
-        // 5) 페이지 슬라이스(조상 강제 포함하지 않음)
-        List<Comment> pageSlice = flatList.subList(start, end);
-
-        // 포함된 댓글들의 ID 집합
-        Set<Long> includedIds = pageSlice.stream().map(Comment::getId).collect(Collectors.toSet());
-
-        // 6) 포함된 댓글들로 childrenMap 필터링 (재구성용) - 하위 노드만 포함
-        Map<Long, List<Comment>> filteredChildrenMap = new HashMap<>();
-        for (Map.Entry<Long, List<Comment>> entry : childrenMap.entrySet()) {
-            List<Comment> filtered = entry.getValue().stream()
-                    .filter(c -> includedIds.contains(c.getId()))
-                    .sorted(Comparator.comparing(Comment::getCreatedAt))
-                    .toList();
-            if (!filtered.isEmpty()) {
-                filteredChildrenMap.put(entry.getKey(), filtered);
-            }
-        }
-
-        // 7) 페이지 슬라이스 내에서 '루트 후보'만 응답으로 포함 (슬라이스에 해당 댓글의 조상이 없을 때만 포함)
-        List<Comment> roots = pageSlice.stream()
-                .filter(c -> c.getParentComment() == null || !includedIds.contains(c.getParentComment().getId()))
-                .sorted(Comparator.comparingInt(c -> indexById.get(c.getId())))
-                .toList();
-
-        List<CommentListResponse> pageResponses = roots.stream()
-                .map(root -> buildTree(root, filteredChildrenMap))
+        // 4. 각 부모에 대해 재귀적으로 트리 생성
+        List<CommentListResponse> pageResponses = parents.stream()
+                .map(parent -> buildTree(parent, childrenMap))
                 .collect(Collectors.toList());
 
-        // 8) 응답 페이지 생성 - total은 전체 평탄화된 댓글 수
-        Pageable pageableForResponse = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("createdAt")));
-        Page<CommentListResponse> responsePage = new PageImpl<>(pageResponses, pageableForResponse, total);
-
+        // 5. PageImpl으로 페이지 메타정보 유지하면서 반환
+        Page<CommentListResponse> responsePage = new PageImpl<>(pageResponses, pageable, parentPage.getTotalElements());
         return new PageCommentDto<>(responsePage);
     }
 
@@ -141,18 +94,6 @@ public class CommentService {
                 .toList();
 
         return CommentListResponse.of(comment, childResponses);
-    }
-
-    // 전위 순회로 평탄화
-    private void flattenPreOrder(Comment comment, Map<Long, List<Comment>> childrenMap, List<Comment> flatList) {
-        flatList.add(comment);
-        List<Comment> children = childrenMap.getOrDefault(comment.getId(), Collections.emptyList());
-        if (!children.isEmpty()) {
-            children.sort(Comparator.comparing(Comment::getCreatedAt));
-            for (Comment c : children) {
-                flattenPreOrder(c, childrenMap, flatList);
-            }
-        }
     }
 
     @Transactional
