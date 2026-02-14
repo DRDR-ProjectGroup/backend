@@ -19,6 +19,8 @@ public class CommentListResponse {
     private AuthorResponse author;
     private String content;
     private LocalDateTime createdAt;
+    private AuthorResponse parentAuthor;
+    private int depth;
     private List<CommentListResponse> child;
 
     public static CommentListResponse of(Comment comment, List<CommentListResponse> childComments) {
@@ -28,6 +30,8 @@ public class CommentListResponse {
                 .author(deleted ? null : AuthorResponse.of(comment.getMember()))
                 .content(deleted ? "삭제된 댓글입니다." : comment.getContent())
                 .createdAt(comment.getCreatedAt())
+                .parentAuthor(deleted || comment.getParentComment() == null ? null : AuthorResponse.of(comment.getParentComment().getMember()))
+                .depth(comment.getDepth())
                 .child(childComments)
                 .build();
     }

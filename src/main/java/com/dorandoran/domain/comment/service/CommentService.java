@@ -96,56 +96,41 @@ public class CommentService {
             indexById.put(flatList.get(i).getId(), i);
         }
 
-        // 5) 페이징 범위에 포함된 댓글들의 조상들이 모두 포함되도록 start 조정
-        int adjustedStart = start;
-        for (int i = start; i < end; i++) {
-            Comment c = flatList.get(i);
-            Comment parent = c.getParentComment();
-            while (parent != null) {
-                Integer idx = indexById.get(parent.getId());
-                if (idx == null) break;
-                if (idx < adjustedStart) adjustedStart = idx;
-                parent = parent.getParentComment();
-            }
-        }
-
-        start = adjustedStart;
-        end = Math.min(start + size, total);
-
+        // 5) 페이지 슬라이스(조상 강제 포함하지 않음)
         List<Comment> pageSlice = flatList.subList(start, end);
 
+        // 포함된 댓글들의 ID 집합
         Set<Long> includedIds = pageSlice.stream().map(Comment::getId).collect(Collectors.toSet());
 
-        // 6) 포함된 댓글들로 childrenMap 필터링 (재구성용)
+        // 6) 포함된 댓글들로 childrenMap 필터링 (재구성용) - 하위 노드만 포함
         Map<Long, List<Comment>> filteredChildrenMap = new HashMap<>();
         for (Map.Entry<Long, List<Comment>> entry : childrenMap.entrySet()) {
             List<Comment> filtered = entry.getValue().stream()
                     .filter(c -> includedIds.contains(c.getId()))
                     .sorted(Comparator.comparing(Comment::getCreatedAt))
-                    .collect(Collectors.toList());
+                    .toList();
             if (!filtered.isEmpty()) {
                 filteredChildrenMap.put(entry.getKey(), filtered);
             }
         }
 
-        // 7) 루트 후보: 포함된 댓글 중 부모가 없거나 부모가 포함되지 않은 것
+        // 7) 페이지 슬라이스 내에서 '루트 후보'만 응답으로 포함 (슬라이스에 해당 댓글의 조상이 없을 때만 포함)
         List<Comment> roots = pageSlice.stream()
                 .filter(c -> c.getParentComment() == null || !includedIds.contains(c.getParentComment().getId()))
                 .sorted(Comparator.comparingInt(c -> indexById.get(c.getId())))
-                .collect(Collectors.toList());
+                .toList();
 
         List<CommentListResponse> pageResponses = roots.stream()
                 .map(root -> buildTree(root, filteredChildrenMap))
                 .collect(Collectors.toList());
 
-        // 8) 응답 페이지 생성
-        int responsePageIndex = start / size; // adjusted page index
-        Pageable pageableForResponse = PageRequest.of(responsePageIndex, size, Sort.by(Sort.Order.asc("createdAt")));
+        // 8) 응답 페이지 생성 - total은 전체 평탄화된 댓글 수
+        Pageable pageableForResponse = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Order.asc("createdAt")));
         Page<CommentListResponse> responsePage = new PageImpl<>(pageResponses, pageableForResponse, total);
 
         return new PageCommentDto<>(responsePage);
     }
-    
+
     // 댓글 트리를 위한 재귀 함수
     private CommentListResponse buildTree(Comment comment, Map<Long, List<Comment>> childrenMap) {
         List<Comment> directChildren = childrenMap.getOrDefault(comment.getId(), Collections.emptyList());
