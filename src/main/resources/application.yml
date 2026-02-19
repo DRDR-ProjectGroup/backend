@@ -108,3 +108,8 @@ management:
 post:
   popular:
     like-count-threshold: 10
+
+app:
+  s3:
+    bucket: ${DRDR_S3_BUCKET}
+    prefix: ${DRDR_S3_PREFIX}

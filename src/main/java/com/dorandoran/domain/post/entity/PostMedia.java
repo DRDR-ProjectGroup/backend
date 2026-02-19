@@ -26,7 +26,7 @@ public class PostMedia extends BaseEntity {
     private String storedName;
 
     @Column(nullable = false)
-    private String url;
+    private String objectKey;
 
     @Column(nullable = false)
     private long size;
@@ -35,23 +35,23 @@ public class PostMedia extends BaseEntity {
     private int sortOrder;
 
     @Builder
-    private PostMedia(Post post, MediaType mediaType, String originalName, String storedName, String url, long size, int sortOrder) {
+    private PostMedia(Post post, MediaType mediaType, String originalName, String storedName, String objectKey, long size, int sortOrder) {
         this.post = post;
         this.mediaType = mediaType;
         this.originalName = originalName;
         this.storedName = storedName;
-        this.url = url;
+        this.objectKey = objectKey;
         this.size = size;
         this.sortOrder = sortOrder;
     }
 
-    public static PostMedia createPostMedia(Post post, MediaType mediaType, String originalName, String storedName, String url, long size, int sortOrder) {
+    public static PostMedia createPostMedia(Post post, MediaType mediaType, String originalName, String storedName, String objectKey, long size, int sortOrder) {
         return PostMedia.builder()
                 .post(post)
                 .mediaType(mediaType)
                 .originalName(originalName)
                 .storedName(storedName)
-                .url(url)
+                .objectKey(objectKey)
                 .size(size)
                 .sortOrder(sortOrder)
                 .build();

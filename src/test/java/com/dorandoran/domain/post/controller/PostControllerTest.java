@@ -6,8 +6,6 @@ import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
-import com.dorandoran.domain.post.dto.response.PostMediaResponse;
-import com.dorandoran.domain.post.dto.response.PostResponse;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.SuccessCode;
@@ -114,10 +112,6 @@ class PostControllerTest extends SpringBootTestSupporter {
     void getPost() throws Exception {
         // given
         Long postId = post.getId();
-        List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
-                .map(PostMediaResponse::of)
-                .toList();
-        PostResponse expectedResponse = PostResponse.of(post, mediaResponses);
 
         // when
         ResultActions result = mockMvc.perform(get("/api/v1/posts/{postId}", postId)
@@ -128,11 +122,11 @@ class PostControllerTest extends SpringBootTestSupporter {
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(POST_DETAIL_SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.code").value(POST_DETAIL_SUCCESS.getHttpStatus().value()))
-                .andExpect(jsonPath("$.data.postId").value(expectedResponse.getPostId()))
-                .andExpect(jsonPath("$.data.title").value(expectedResponse.getTitle()))
-                .andExpect(jsonPath("$.data.content").value(expectedResponse.getContent()))
-                .andExpect(jsonPath("$.data.mediaList[0].url").value(expectedResponse.getMediaList().getFirst().getUrl()))
-                .andExpect(jsonPath("$.data.mediaList[0].order").value(expectedResponse.getMediaList().getFirst().getOrder()))
+                .andExpect(jsonPath("$.data.postId").value(post.getId()))
+                .andExpect(jsonPath("$.data.title").value(post.getTitle()))
+                .andExpect(jsonPath("$.data.content").value(post.getContent()))
+                .andExpect(jsonPath("$.data.mediaList[0].url").exists())
+                .andExpect(jsonPath("$.data.mediaList[0].order").value(1))
         ;
     }
 

@@ -8,6 +8,6 @@ import lombok.Getter;
 public class StoredMedia {
     private String originalName;
     private String storedName;
-    private String url;
+    private String objectKey;
     private long size;
 }

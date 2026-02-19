@@ -14,9 +14,9 @@ public class PostMediaResponse {
     private String url;
     private int order;
 
-    public static PostMediaResponse of(PostMedia postMedia) {
+    public static PostMediaResponse of(PostMedia postMedia, String url) {
         return PostMediaResponse.builder()
-                .url(postMedia.getUrl())
+                .url(url)
                 .order(postMedia.getSortOrder())
                 .build();
     }

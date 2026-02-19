@@ -11,6 +11,7 @@ import com.dorandoran.domain.post.dto.response.*;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
+import com.dorandoran.domain.post.generator.MediaUrlResolver;
 import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.domain.post.storage.MediaStorage;
@@ -18,7 +19,6 @@ import com.dorandoran.domain.post.storage.StoredMedia;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.domain.post.type.PostSortType;
-import com.dorandoran.domain.search.doc.PostDocument;
 import com.dorandoran.domain.search.dto.SearchResult;
 import com.dorandoran.domain.search.service.PostIndexService;
 import com.dorandoran.domain.search.service.PostSearchService;
@@ -33,8 +33,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -54,6 +52,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final PostIndexService postIndexService;
     private final PostSearchService postSearchService;
+    private final MediaUrlResolver mediaUrlResolver;
 
     @Value("${search.elastic.enabled}")
     private boolean elasticEnabled;
@@ -81,27 +80,25 @@ public class PostService {
             savePostMedia(saved, files);
         }
 
-        // 검색을 위한 색인 작업 (미디어 저장 후, 트랜잭션 커밋 후 실행)
-        PostDocument doc = PostDocument.createDoc(saved);
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    try {
-                        postIndexService.index(doc);
-                    } catch (IOException e) {
-                        log.error("Failed to index post after commit, id={}", saved.getId(), e);
-                    }
-                }
-            });
-        } else {
-            postIndexService.index(doc);
-        }
+//        // 검색을 위한 색인 작업 (미디어 저장 후, 트랜잭션 커밋 후 실행)
+//        PostDocument doc = PostDocument.createDoc(saved);
+//        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+//            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+//                @Override
+//                public void afterCommit() {
+//                    try {
+//                        postIndexService.index(doc);
+//                    } catch (IOException e) {
+//                        log.error("Failed to index post after commit, id={}", saved.getId(), e);
+//                    }
+//                }
+//            });
+//        } else {
+//            postIndexService.index(doc);
+//        }
 
 
-        List<PostMediaResponse> mediaResponses = saved.getPostMediaList().stream()
-                .map(PostMediaResponse::of)
-                .toList();
+        List<PostMediaResponse> mediaResponses = mapMediaResponses(saved.getPostMediaList());
 
         return PostResponse.of(saved, mediaResponses);
     }
@@ -122,9 +119,7 @@ public class PostService {
 
         Post post = findPostById(postId);
 
-        List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
-                .map(PostMediaResponse::of)
-                .toList();
+        List<PostMediaResponse> mediaResponses = mapMediaResponses(post.getPostMediaList());
 
         return PostResponseWithLikeType.of(post, mediaResponses);
     }
@@ -154,27 +149,25 @@ public class PostService {
             savePostMedia(post, files);
         }
 
-        // 수정 후 색인 갱신을 트랜잭션 커밋 후 실행 (DB 정합성을 위해 DB에 반영된 후 색인 작업 수행)
-        PostDocument doc = PostDocument.createDoc(post);
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    try {
-                        postIndexService.index(doc);
-                    } catch (IOException e) {
-                        log.error("Failed to index post after commit, id={}", post.getId(), e);
-                    }
-                }
-            });
-        } else {
-            // 트랜잭션이 없으면 즉시 실행
-            postIndexService.index(doc);
-        }
+//        // 수정 후 색인 갱신을 트랜잭션 커밋 후 실행 (DB 정합성을 위해 DB에 반영된 후 색인 작업 수행)
+//        PostDocument doc = PostDocument.createDoc(post);
+//        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+//            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+//                @Override
+//                public void afterCommit() {
+//                    try {
+//                        postIndexService.index(doc);
+//                    } catch (IOException e) {
+//                        log.error("Failed to index post after commit, id={}", post.getId(), e);
+//                    }
+//                }
+//            });
+//        } else {
+//            // 트랜잭션이 없으면 즉시 실행
+//            postIndexService.index(doc);
+//        }
 
-        List<PostMediaResponse> mediaResponses = post.getPostMediaList().stream()
-                .map(PostMediaResponse::of)
-                .toList();
+        List<PostMediaResponse> mediaResponses = mapMediaResponses(post.getPostMediaList());
 
         return PostResponse.of(post, mediaResponses);
     }
@@ -194,25 +187,25 @@ public class PostService {
 
         post.setDeletedAt();
 
-        // soft-delete 후 ES 색인에서 해당 문서 삭제를 트랜잭션 커밋 후 실행
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    try {
-                        postIndexService.delete(postId);
-                    } catch (IOException e) {
-                        log.error("Failed to delete post index after commit for id={}", postId, e);
-                    }
-                }
-            });
-        } else {
-            try {
-                postIndexService.delete(postId);
-            } catch (IOException e) {
-                log.error("Failed to delete post index for id={}", postId, e);
-            }
-        }
+//        // soft-delete 후 ES 색인에서 해당 문서 삭제를 트랜잭션 커밋 후 실행
+//        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+//            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+//                @Override
+//                public void afterCommit() {
+//                    try {
+//                        postIndexService.delete(postId);
+//                    } catch (IOException e) {
+//                        log.error("Failed to delete post index after commit for id={}", postId, e);
+//                    }
+//                }
+//            });
+//        } else {
+//            try {
+//                postIndexService.delete(postId);
+//            } catch (IOException e) {
+//                log.error("Failed to delete post index for id={}", postId, e);
+//            }
+//        }
     }
 
     @Transactional(readOnly = true)
@@ -435,7 +428,7 @@ public class PostService {
                     mediaType,
                     stored.getOriginalName(),
                     stored.getStoredName(),
-                    stored.getUrl(),
+                    stored.getObjectKey(),
                     stored.getSize(),
                     order++
             );
@@ -470,5 +463,11 @@ public class PostService {
 
     public boolean existsNotDeletedPostByCategoryId(Long categoryId) {
         return postRepository.existsByCategoryIdAndDeletedAtIsNull(categoryId);
+    }
+
+    private List<PostMediaResponse> mapMediaResponses(List<PostMedia> mediaList) {
+        return mediaList.stream()
+                .map(media -> PostMediaResponse.of(media, mediaUrlResolver.resolve(media)))
+                .toList();
     }
 }

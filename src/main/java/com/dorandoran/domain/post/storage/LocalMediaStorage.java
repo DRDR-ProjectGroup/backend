@@ -4,6 +4,7 @@ import com.dorandoran.domain.post.generator.FilePathGenerator;
 import com.dorandoran.domain.post.generator.MediaUrlGenerator;
 import com.dorandoran.domain.post.type.MediaType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 import static java.util.Objects.requireNonNull;
 
 @Component
+@Profile("!prod")
 @RequiredArgsConstructor
 public class LocalMediaStorage implements MediaStorage {
 

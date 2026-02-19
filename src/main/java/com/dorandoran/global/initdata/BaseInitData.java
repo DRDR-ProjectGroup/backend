@@ -7,11 +7,6 @@ import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.repository.MemberRepository;
 import com.dorandoran.domain.member.service.MemberService;
-import com.dorandoran.domain.post.entity.Post;
-import com.dorandoran.domain.post.entity.PostMedia;
-import com.dorandoran.domain.post.repository.PostMediaRepository;
-import com.dorandoran.domain.post.repository.PostRepository;
-import com.dorandoran.domain.post.type.MediaType;
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.response.ErrorCode;
 import jakarta.transaction.Transactional;
@@ -34,8 +29,6 @@ public class BaseInitData {
     private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PostRepository postRepository;
-    private final PostMediaRepository postMediaRepository;
     private final MemberService memberService;
 
     @EventListener(ApplicationReadyEvent.class)
@@ -45,7 +38,6 @@ public class BaseInitData {
         createMemberData(3);
         createDefaultCategoryGroup();
         createDefaultCategory();
-        createPostAndPostMediaData();
     }
 
     private List<Member> createMemberData(int count) {
@@ -124,57 +116,5 @@ public class BaseInitData {
                 )
         );
         return categoryList;
-    }
-
-    private void createPostAndPostMediaData() {
-        if (postRepository.count() != 0) {
-            return;
-        }
-
-        for (int i = 1; i <= 5; i++) {
-            Post post = Post.createPost(
-                    memberRepository.findById(1L).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)),
-                    categoryRepository.findByAddress("free").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
-                    "게시글 제목 " + i,
-                    "게시글 내용 " + i
-            );
-
-            PostMedia postMedia = PostMedia.createPostMedia(
-                    post,
-                    MediaType.IMAGE,
-                    "temp%d.jpg".formatted(i),
-                    "stored_temp%d.jpg".formatted(i),
-                    "http://example.com/stored_temp%d.jpg".formatted(i),
-                    2048L,
-                    0
-            );
-
-            post.addMedia(postMedia);
-
-            postRepository.save(post);
-        }
-
-        for (int i = 1; i <= 5; i++) {
-            Post post = Post.createPost(
-                    memberRepository.findById(1L).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)),
-                    categoryRepository.findByAddress("lol").orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND)),
-                    "게시글 제목 " + i,
-                    "게시글 내용 " + i
-            );
-
-            PostMedia postMedia = PostMedia.createPostMedia(
-                    post,
-                    MediaType.IMAGE,
-                    "temp%d.jpg".formatted(i),
-                    "stored_temp%d.jpg".formatted(i),
-                    "http://example.com/stored_temp%d.jpg".formatted(i),
-                    2048L,
-                    0
-            );
-
-            post.addMedia(postMedia);
-
-            postRepository.save(post);
-        }
     }
 }
