@@ -10,8 +10,8 @@ spring:
   # 공통 파일 업로드 설정
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 10MB
+      max-file-size: 20MB
+      max-request-size: 100MB
   
   # 공통 웹 설정
   web:

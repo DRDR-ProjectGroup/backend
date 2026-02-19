@@ -95,6 +95,82 @@ class PostServiceTest extends SpringBootTestSupporter {
                 .isEqualTo(ErrorCode.CATEGORY_NOT_FOUND);
     }
 
+    @DisplayName("게시글 생성 실패 - 파일 개수 초과")
+    @Test
+    void createPost_Fail_FileCountExceed() {
+        // given
+        String memberId = member.getId().toString();
+        String categoryName = category.getAddress();
+        PostCreateRequest request = new PostCreateRequest("게시글 제목", "게시글 내용");
+        List<MultipartFile> files = List.of(
+                new MockMultipartFile(
+                        "files",
+                        "image1.png",
+                        "image/png",
+                        "dummy image content".getBytes()
+                ),
+                new MockMultipartFile(
+                        "files",
+                        "image2.jpg",
+                        "image/jpeg",
+                        "dummy image content".getBytes()
+                ),
+                new MockMultipartFile(
+                        "files",
+                        "image3.jpg",
+                        "image/jpeg",
+                        "dummy image content".getBytes()
+                ),
+                new MockMultipartFile(
+                        "files",
+                        "image4.jpg",
+                        "image/jpeg",
+                        "dummy image content".getBytes()
+                ),
+                new MockMultipartFile(
+                        "files",
+                        "image4.jpg",
+                        "image/jpeg",
+                        "dummy image content".getBytes()
+                ),
+                new MockMultipartFile(
+                        "files",
+                        "image4.jpg",
+                        "image/jpeg",
+                        "dummy image content".getBytes()
+                )
+        );
+
+        // when // then
+        assertThatThrownBy(() -> postService.createPost(memberId, categoryName, request, files))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.MEDIA_COUNT_EXCEEDED);
+    }
+
+    @DisplayName("게시글 생성 실패 - 파일 크기 초과")
+    @Test
+    void createPost_Fail_FileSizeExceed() {
+        // given
+        String memberId = member.getId().toString();
+        String categoryName = category.getAddress();
+        PostCreateRequest request = new PostCreateRequest("게시글 제목", "게시글 내용");
+        List<MultipartFile> files = List.of(
+                new MockMultipartFile(
+                        "files",
+                        "large_image.jpg",
+                        "image/jpeg",
+                        new byte[20 * 1024 * 1024 + 1]
+                )
+        );
+
+        // when // then
+        assertThatThrownBy(() -> postService.createPost(memberId, categoryName, request, files))
+                .isInstanceOf(Exception.class)
+                .extracting("code")
+                .isEqualTo(ErrorCode.MEDIA_FILE_TOO_LARGE);
+    }
+
     @DisplayName("미디어 저장 실패 - 잘못된 파일 형식")
     @Test
     void mediaType_Fail() {
