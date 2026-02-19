@@ -185,6 +185,15 @@ public class PostService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
         }
 
+//        // 게시글 hard delete 방법
+//        List<String> objectKeys = post.getPostMediaList().stream()
+//                .map(PostMedia::getObjectKey)
+//                .filter(objectKey -> objectKey != null && !objectKey.isBlank())
+//                .toList();
+//
+//        postRepository.delete(post);
+//        mediaStorage.delete(objectKeys);
+
         post.setDeletedAt();
 
 //        // soft-delete 후 ES 색인에서 해당 문서 삭제를 트랜잭션 커밋 후 실행

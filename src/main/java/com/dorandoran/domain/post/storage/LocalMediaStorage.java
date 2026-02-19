@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -41,5 +43,29 @@ public class LocalMediaStorage implements MediaStorage {
                 imgUrlPath.toString(),
                 file.getSize()
         );
+    }
+
+    @Override
+    public void delete(List<String> objectKeys) throws IOException {
+        if (objectKeys == null || objectKeys.isEmpty()) {
+            return;
+        }
+
+        String userHome = System.getProperty("user.home");
+        Path mediaRoot = Paths.get(userHome, "doranTemp").toAbsolutePath().normalize();
+
+        for (String objectKey : objectKeys) {
+            if (objectKey == null || objectKey.isBlank() || !objectKey.startsWith("/media/")) {
+                continue;
+            }
+
+            String relativePath = objectKey.substring("/media/".length());
+            Path filePath = mediaRoot.resolve(relativePath).normalize();
+            if (!filePath.startsWith(mediaRoot)) {
+                continue;
+            }
+
+            Files.deleteIfExists(filePath);
+        }
     }
 }
