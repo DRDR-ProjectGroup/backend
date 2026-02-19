@@ -24,6 +24,10 @@ public class MediaUrlResolver {
             return objectKey;
         }
 
+        if (objectKey.startsWith("/media")) {
+            return "http://localhost:8080" + objectKey;
+        }
+
         if (objectKey.startsWith("http://") || objectKey.startsWith("https://") || objectKey.startsWith("/")) {
             return objectKey;
         }
