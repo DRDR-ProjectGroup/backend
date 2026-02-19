@@ -401,11 +401,29 @@ public class PostService {
     }
 
     private void savePostMedia(Post post, List<MultipartFile> mediaList) throws IOException {
-        int order = 0;
+        final long MAX_FILE_SIZE = 20L * 1024 * 1024; // 20 MB
+        final int MAX_FILES_PER_POST = 5;
+
+        int existingCount = post.getPostMediaList() != null ? post.getPostMediaList().size() : 0;
+
+        int incomingCount = 0;
+        for (MultipartFile f : mediaList) {
+            if (f != null && !f.isEmpty()) incomingCount++;
+        }
+
+        if (existingCount + incomingCount > MAX_FILES_PER_POST) {
+            throw new CustomException(ErrorCode.MEDIA_COUNT_EXCEEDED);
+        }
+
+        int order = existingCount; // 기존 미디어 다음 순서부터 시작
 
         for (MultipartFile file : mediaList) {
             if (file == null || file.isEmpty()) {
                 continue;
+            }
+
+            if (file.getSize() > MAX_FILE_SIZE) {
+                throw new CustomException(ErrorCode.MEDIA_FILE_TOO_LARGE);
             }
 
             MediaType mediaType = resolveMediaType(file);

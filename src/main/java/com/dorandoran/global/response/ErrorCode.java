@@ -42,6 +42,8 @@ public enum ErrorCode {
 
     // Post 오류
     INVALID_MEDIA_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 미디어 타입입니다."),
+    MEDIA_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "파일 크기가 허용치를 초과했습니다."),
+    MEDIA_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST, "게시글당 업로드 가능한 미디어 개수를 초과했습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
     UNAUTHORIZED_POST_MODIFICATION(HttpStatus.UNAUTHORIZED, "게시글 수정/삭제 권한이 없습니다."),
 
