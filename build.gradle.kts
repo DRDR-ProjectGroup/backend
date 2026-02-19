@@ -68,6 +68,9 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    // S3
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis-test")
