@@ -24,7 +24,8 @@ public class MediaUrlResolver {
             return objectKey;
         }
 
-        if (objectKey.startsWith("/media")) {
+        String normalizedKey = objectKey.replace("\\", "/");
+        if (normalizedKey.startsWith("/media")) {
             return "http://localhost:8080" + objectKey;
         }
 
