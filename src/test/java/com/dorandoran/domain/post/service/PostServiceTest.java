@@ -6,6 +6,7 @@ import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.dto.request.PostModifyRequest;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.ErrorCode;
@@ -247,7 +248,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         // given
         Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
         String memberId = "9999";
-        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        PostModifyRequest request = new PostModifyRequest("수정된 제목", "수정된 내용", null, null, null);
         List<MultipartFile> files = List.of(
                 new MockMultipartFile(
                         "files",
@@ -270,7 +271,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         // given
         Long nonExistentPostId = 9999L;
         String memberId = member.getId().toString();
-        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        PostModifyRequest request = new PostModifyRequest("수정된 제목", "수정된 내용", null, null, null);
         List<MultipartFile> files = List.of(
                 new MockMultipartFile(
                         "files",
@@ -293,7 +294,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         // given
         Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
         String secondMemberId = secondMember.getId().toString();
-        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        PostModifyRequest request = new PostModifyRequest("수정된 제목", "수정된 내용", null, null, null);
         List<MultipartFile> files = List.of(
                 new MockMultipartFile(
                         "files",
@@ -317,7 +318,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
         postService.deletePost(postId, member.getId().toString());
         String memberId = member.getId().toString();
-        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        PostModifyRequest request = new PostModifyRequest("수정된 제목", "수정된 내용", null, null, null);
         List<MultipartFile> files = List.of(
                 new MockMultipartFile(
                         "files",

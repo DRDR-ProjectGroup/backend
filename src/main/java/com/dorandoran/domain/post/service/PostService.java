@@ -7,12 +7,14 @@ import com.dorandoran.domain.member.service.MemberService;
 import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.dto.request.PostModifyRequest;
 import com.dorandoran.domain.post.dto.response.*;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
 import com.dorandoran.domain.post.generator.MediaUrlResolver;
 import com.dorandoran.domain.post.repository.PostLikeRepository;
+import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
 import com.dorandoran.domain.post.storage.MediaStorage;
 import com.dorandoran.domain.post.storage.StoredMedia;
@@ -36,7 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -45,6 +49,7 @@ import java.util.Optional;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostMediaRepository postMediaRepository;
     private final MemberService memberService;
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
@@ -125,7 +130,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse modifyPost(String memberId, Long postId, PostCreateRequest dto, List<MultipartFile> files) throws IOException {
+    public PostResponse modifyPost(String memberId, Long postId, PostModifyRequest dto, List<MultipartFile> files) throws IOException {
         // 회원 조회
         Member member = memberService.findMemberByStringId(memberId);
 
@@ -140,13 +145,48 @@ public class PostService {
         // 게시글 수정 로직 구현
         post.modifyTitleAndContent(dto.getTitle(), dto.getContent());
 
-        // 이미지 처리 로직 구현 (파일이 주어지면 기존 미디어를 교체)
-        if (files != null && !files.isEmpty()) {
-            // 기존 미디어 제거 (orphanRemoval=true 이므로 영속성 컨텍스트에 의해 삭제됨)
-            post.clearMedia();
+        // olderMediaIdsAndOrders로 전달받은 id와 order로 기존 미디어의 순서를 업데이트
+        Map<Long, Integer> olderMediaIdsAndOrders = dto.getOldMediaIdsAndOrders();
+        if (olderMediaIdsAndOrders != null) {
+            for (Map.Entry<Long, Integer> entry : olderMediaIdsAndOrders.entrySet()) {
+                Long mediaId = entry.getKey();
+                Integer order = entry.getValue();
 
-            // 새 미디어 추가
-            savePostMedia(post, files);
+                PostMedia postMedia = postMediaRepository.findByIdAndPostId(mediaId, postId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.POST_MEDIA_NOT_FOUND));
+
+                postMedia.updateOrder(order);
+            }
+        }
+
+        // deletedMediaIds에 포함된 id는 삭제 처리 (파일 스토리지에서도 삭제 필요)
+        List<Long> deletedMediaIds = dto.getDeletedMediaIds();
+        if (deletedMediaIds != null && !deletedMediaIds.isEmpty()) {
+            List<String> objectKeys = new ArrayList<>();
+
+            for (Long mediaId : deletedMediaIds) {
+                PostMedia postMedia = postMediaRepository.findByIdAndPostId(mediaId, postId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.POST_MEDIA_NOT_FOUND));
+
+                // 파일 스토리지에서 삭제
+                if (postMedia.getObjectKey() != null && !postMedia.getObjectKey().isBlank()) {
+                    objectKeys.add(postMedia.getObjectKey());
+                }
+
+                // DB에서 삭제
+                postMediaRepository.delete(postMedia);
+
+                // 게시글의 미디어 리스트에서도 제거 (영속성 컨텍스트에서 관리되는 객체이므로, 직접 리스트에서 제거)
+                post.getPostMediaList().remove(postMedia);
+            }
+
+            mediaStorage.delete(objectKeys);
+        }
+
+        // 이미지 처리 로직 구현 (파일이 주어지면 기존 미디어를 교체)
+        List<Integer> newMediaOrders = dto.getNewMediaOrders();
+        if (files != null && !files.isEmpty() && newMediaOrders != null && !newMediaOrders.isEmpty()) {
+            savePostMedia(post, files, newMediaOrders);
         }
 
 //        // 수정 후 색인 갱신을 트랜잭션 커밋 후 실행 (DB 정합성을 위해 DB에 반영된 후 색인 작업 수행)
@@ -443,6 +483,52 @@ public class PostService {
             );
 
             post.addMedia(postMedia);
+
+            postMediaRepository.save(postMedia);
+        }
+    }
+
+    private void savePostMedia(Post post, List<MultipartFile> mediaList, List<Integer> newMediaOrders) throws IOException {
+        final long MAX_FILE_SIZE = 20L * 1024 * 1024;
+        final int remaining = 5 - post.getPostMediaList().size();
+
+        int incomingCount = 0;
+        for (MultipartFile f : mediaList) {
+            if (f != null && !f.isEmpty()) incomingCount++;
+        }
+
+        if (incomingCount > remaining) {
+            throw new CustomException(ErrorCode.MEDIA_COUNT_EXCEEDED);
+        }
+
+        for (int i = 0; i < mediaList.size(); i++) {
+            MultipartFile file = mediaList.get(i);
+
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
+
+            if (file.getSize() > MAX_FILE_SIZE) {
+                throw new CustomException(ErrorCode.MEDIA_FILE_TOO_LARGE);
+            }
+
+            MediaType mediaType = resolveMediaType(file);
+            StoredMedia stored = mediaStorage.save(file, mediaType);
+
+            // PostMedia 엔티티 생성 및 저장 로직 추가
+            PostMedia postMedia = PostMedia.createPostMedia(
+                    post,
+                    mediaType,
+                    stored.getOriginalName(),
+                    stored.getStoredName(),
+                    stored.getObjectKey(),
+                    stored.getSize(),
+                    newMediaOrders.get(i)
+            );
+
+            post.addMedia(postMedia);
+
+            postMediaRepository.save(postMedia);
         }
     }
 

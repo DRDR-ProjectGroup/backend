@@ -41,9 +41,9 @@ public final class PostFactory {
                     MediaType.IMAGE,
                     "originalName" + i,
                     "storedName" + i,
-                    "url" + i,
+                    "/media/url" + i,
                     1024L,
-                    1
+                    0
             );
             newPost.addMedia(newPostMedia);
             Post savedPost = postRepository.save(newPost);

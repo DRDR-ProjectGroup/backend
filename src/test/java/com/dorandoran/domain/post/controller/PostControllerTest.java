@@ -6,6 +6,7 @@ import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.dto.request.PostModifyRequest;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.SuccessCode;
@@ -126,7 +127,7 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.data.title").value(post.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(post.getContent()))
                 .andExpect(jsonPath("$.data.mediaList[0].url").exists())
-                .andExpect(jsonPath("$.data.mediaList[0].order").value(1))
+                .andExpect(jsonPath("$.data.mediaList[0].order").value(0))
         ;
     }
 
@@ -135,7 +136,8 @@ class PostControllerTest extends SpringBootTestSupporter {
     void modifyPost() throws Exception {
         // given
         Long postId = post.getId();
-        PostCreateRequest request = new PostCreateRequest("수정된 제목", "수정된 내용");
+        List<Integer> newOrderList = List.of(1);
+        PostModifyRequest request = new PostModifyRequest("수정된 제목", "수정된 내용", null, null, newOrderList);
 
         MockMultipartFile postPart = new MockMultipartFile(
                 "post",
@@ -167,8 +169,8 @@ class PostControllerTest extends SpringBootTestSupporter {
                 .andExpect(jsonPath("$.code").value(POST_MODIFY_SUCCESS.getHttpStatus().value()))
                 .andExpect(jsonPath("$.data.title").value(request.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(request.getContent()))
-                .andExpect(jsonPath("$.data.mediaList[0].url").exists())
-                .andExpect(jsonPath("$.data.mediaList[0].order").value(0))
+                .andExpect(jsonPath("$.data.mediaList[1].url").exists())
+                .andExpect(jsonPath("$.data.mediaList[1].order").value(1))
         ;
     }
 
