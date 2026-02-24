@@ -36,8 +36,9 @@ server:
 # 프로덕션 환경 커스텀 설정 (실제 도메인으로 변경 필요)
 custom:
   site:
-    frontUrl: ""
-    backUrl: ""
+    frontUrl: "https://www.drdr.kr"
+    backUrl: "https://api.drdr.kr"
   cors:
     allowed-origins:
-      -
+      - https://www.drdr.kr
+      - https://api.drdr.kr
