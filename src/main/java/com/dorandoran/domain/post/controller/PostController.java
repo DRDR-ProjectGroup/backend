@@ -2,6 +2,7 @@ package com.dorandoran.domain.post.controller;
 
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
+import com.dorandoran.domain.post.dto.request.PostModifyRequest;
 import com.dorandoran.domain.post.dto.response.PostLikeResponse;
 import com.dorandoran.domain.post.dto.response.PostListResponse;
 import com.dorandoran.domain.post.dto.response.PostResponse;
@@ -63,7 +64,7 @@ public class PostController {
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<PostResponse> modifyPost(
             @PathVariable Long postId,
-            @RequestPart("post") PostCreateRequest request,
+            @RequestPart("post") PostModifyRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             Principal principal
     ) throws IOException {

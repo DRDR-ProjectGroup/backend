@@ -56,4 +56,8 @@ public class PostMedia extends BaseEntity {
                 .sortOrder(sortOrder)
                 .build();
     }
+
+    public void updateOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }
