@@ -12,10 +12,12 @@ import com.dorandoran.domain.post.dto.response.*;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
+import com.dorandoran.domain.post.entity.PostRevision;
 import com.dorandoran.domain.post.generator.MediaUrlResolver;
 import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
+import com.dorandoran.domain.post.repository.PostRevisionRepository;
 import com.dorandoran.domain.post.storage.MediaStorage;
 import com.dorandoran.domain.post.storage.StoredMedia;
 import com.dorandoran.domain.post.type.LikeType;
@@ -50,6 +52,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostMediaRepository postMediaRepository;
+    private final PostRevisionRepository postRevisionRepository;
     private final MemberService memberService;
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
@@ -142,6 +145,8 @@ public class PostService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
         }
 
+        savePostRevision(post);
+
         // 게시글 수정 로직 구현
         post.modifyTitleAndContent(dto.getTitle(), dto.getContent());
 
@@ -180,7 +185,7 @@ public class PostService {
                 post.getPostMediaList().remove(postMedia);
             }
 
-            mediaStorage.delete(objectKeys);
+//            mediaStorage.delete(objectKeys);
         }
 
         // 이미지 처리 로직 구현 (파일이 주어지면 기존 미디어를 교체)
@@ -210,6 +215,10 @@ public class PostService {
         List<PostMediaResponse> mediaResponses = mapMediaResponses(post.getPostMediaList());
 
         return PostResponse.of(post, mediaResponses);
+    }
+
+    private void savePostRevision(Post post) {
+        postRevisionRepository.save(PostRevision.createPostRevision(post));
     }
 
     @Transactional
