@@ -7,7 +7,9 @@ import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
 import com.dorandoran.domain.post.dto.request.PostModifyRequest;
+import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
+import com.dorandoran.domain.post.entity.PostRevision;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -333,6 +335,38 @@ class PostServiceTest extends SpringBootTestSupporter {
                 .isInstanceOf(Exception.class)
                 .extracting("code")
                 .isEqualTo(ErrorCode.POST_NOT_FOUND);
+    }
+
+    @DisplayName("게시글 수정 시 수정 전 원본 이력이 저장됨")
+    @Test
+    void modifyPost_Success_SaveRevisionBeforeUpdating() throws Exception {
+        // given
+        Post post = postFactory.saveAndCreatePost(member, category, 1).getFirst();
+        String originalTitle = post.getTitle();
+        String originalContent = post.getContent();
+
+        PostModifyRequest request = new PostModifyRequest("수정된 제목", "수정된 내용", null, null, null);
+
+        // when
+        postService.modifyPost(member.getId().toString(), post.getId(), request, null);
+
+        // then
+        List<PostRevision> revisions = postRevisionRepository.findAll();
+        assertThat(revisions).hasSize(1);
+
+        PostRevision revision = revisions.getFirst();
+        assertThat(revision.getOriginalPostId()).isEqualTo(post.getId());
+        assertThat(revision.getMember().getId()).isEqualTo(member.getId());
+        assertThat(revision.getCategory().getId()).isEqualTo(category.getId());
+        assertThat(revision.getTitle()).isEqualTo(originalTitle);
+        assertThat(revision.getContent()).isEqualTo(originalContent);
+        assertThat(revision.getPostRevisionMediaList()).hasSize(1);
+        assertThat(revision.getPostRevisionMediaList().getFirst().getOriginalName()).isEqualTo("originalName1");
+        assertThat(revision.getPostRevisionMediaList().getFirst().getStoredName()).isEqualTo("storedName1");
+
+        Post modifiedPost = postRepository.findById(post.getId()).orElseThrow();
+        assertThat(modifiedPost.getTitle()).isEqualTo("수정된 제목");
+        assertThat(modifiedPost.getContent()).isEqualTo("수정된 내용");
     }
 
     @DisplayName("파일 타입 확인 - contentType이 null인 경우")
