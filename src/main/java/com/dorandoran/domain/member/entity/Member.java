@@ -1,22 +1,25 @@
 package com.dorandoran.domain.member.entity;
 
+import com.dorandoran.domain.comment.entity.Comment;
 import com.dorandoran.domain.member.type.MemberStatus;
 import com.dorandoran.domain.member.type.Role;
+import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.global.jpa.entity.BaseTime;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+// memberRepository.delete() 호출 시 status를 DELETED로 변경, deletedAt 현재 시간으로 설정
+@SQLDelete(sql = "UPDATE member SET status = 'DELETED', deleted_at = NOW() WHERE id = ?")
 public class Member extends BaseTime {
 
     @Column(nullable = false, unique = true)
@@ -39,22 +42,22 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     private MemberStatus status;
 
-    @Column(nullable = true)
+    @OneToMany(mappedBy = "member")
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "member")
+    private List<Comment> comments;
+
     private LocalDateTime deletedAt;
 
     @Builder
-    private Member(String username, String password, String email, String nickname, Role role, MemberStatus status) {
+    private Member(String username, String password, String email, String nickname) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-        this.role = role;
-        this.status = status;
-    }
-
-    public void withdraw() {
-        this.status = MemberStatus.DELETED;
-        this.deletedAt = LocalDateTime.now();
+        this.role = Role.ROLE_MEMBER;
+        this.status = MemberStatus.ACTIVE;
     }
 
     public static Member createMember(String username, String password, String email, String nickname) {
@@ -63,8 +66,6 @@ public class Member extends BaseTime {
                 .password(password)
                 .email(email)
                 .nickname(nickname)
-                .role(Role.ROLE_MEMBER)
-                .status(MemberStatus.ACTIVE)
                 .build();
     }
 
@@ -74,5 +75,25 @@ public class Member extends BaseTime {
         member.setId(userId);
         member.role = role;
         return member;
+    }
+
+    public void modifyNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void modifyPassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void setRoleAdmin() {
+        this.role = Role.ROLE_ADMIN;
+    }
+
+    public boolean isAdmin() {
+        return this.role == Role.ROLE_ADMIN;
+    }
+
+    public void modifyStatus(MemberStatus memberStatus) {
+        this.status = memberStatus;
     }
 }

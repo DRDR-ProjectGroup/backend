@@ -39,3 +39,4 @@ out/
 ### Custom ###
 .env
 docker/.env
+logs/

@@ -40,7 +40,7 @@ dependencies {
 
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    
+
     // email
     implementation("org.springframework.boot:spring-boot-starter-mail")
 
@@ -48,13 +48,28 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
+    // Test in Lombok
+    testImplementation("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
+
     // swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
-    
+
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
+
+    // Elasticsearch
+    implementation("co.elastic.clients:elasticsearch-java:9.2.3")
+    implementation("org.elasticsearch.client:elasticsearch-rest-client:9.2.3")
+
+    // Prometheus
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    // S3
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0")
 
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")

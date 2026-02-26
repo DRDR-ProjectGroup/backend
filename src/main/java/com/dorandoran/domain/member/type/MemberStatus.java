@@ -1,5 +1,6 @@
 package com.dorandoran.domain.member.type;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -11,4 +12,9 @@ public enum MemberStatus {
     DELETED("탈퇴");
 
     private final String description;
+
+    @JsonCreator
+    public static MemberStatus from(String value) {
+        return MemberStatus.valueOf(value.toUpperCase());
+    }
 }

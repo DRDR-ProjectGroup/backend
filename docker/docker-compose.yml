@@ -9,7 +9,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       TZ: ${MYSQL_TIME_ZONE}
     ports:
-      - "${MYSQL_OUT_PORT}:${MYSQL_OUT_PORT}"
+      - "${MYSQL_OUT_PORT}:3306"
     networks:
       - drdr-network
     volumes:
@@ -27,7 +27,7 @@ services:
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
-      - "${REDIS_OUT_PORT}:${REDIS_OUT_PORT}"
+      - "${REDIS_OUT_PORT}:6379"
     networks:
       - drdr-network
     volumes:
@@ -41,10 +41,8 @@ services:
 
 networks:
   drdr-network:
-    driver: bridge
+    external: true
 
 volumes:
   doran-rdb-data:
-    driver: local
   doran-redis-data:
-    driver: local

@@ -1,4 +1,4 @@
-package com.dorandoran.global;
+package com.dorandoran.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
