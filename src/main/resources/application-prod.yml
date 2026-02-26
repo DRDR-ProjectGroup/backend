@@ -20,6 +20,11 @@ spring:
       include-stacktrace: never
       include-message: never
 
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
 # 프로덕션 환경 로깅 (필수만)
 logging:
   level:
