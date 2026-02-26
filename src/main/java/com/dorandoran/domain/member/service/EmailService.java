@@ -26,8 +26,8 @@ public class EmailService {
         helper.setTo(toEmail);
         helper.setSubject(title);
         helper.setText(content, true);
-        helper.setReplyTo("no-reply@dorandoran.com");
-        helper.setFrom(new InternetAddress("no-reply@dorandoran.com", "도란도란"));
+        helper.setReplyTo("no-reply@drdr.kr");
+        helper.setFrom(new InternetAddress("no-reply@drdr.kr", "도란도란"));
         try {
             emailSender.send(message);
         } catch (Exception e) {
