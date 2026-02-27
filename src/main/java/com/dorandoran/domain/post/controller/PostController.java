@@ -134,4 +134,15 @@ public class PostController {
         PostLikeResponse response = postService.getPostLikeCount(id, memberId);
         return BaseResponse.ok(SuccessCode.POST_LIKE_COUNT_SUCCESS, response);
     }
+
+    // 강제 삭제 테스트용 api
+    @DeleteMapping("/force")
+    @Operation(summary = "게시글 강제 삭제", description = "ID에 해당하는 게시글을 강제로 삭제합니다. (테스트용)")
+    @SecurityRequirement(name = "bearerAuth")
+    public BaseResponse<Void> forceDeletePost(
+            Principal principal
+    ) {
+        postService.deleteExpiredPost();
+        return BaseResponse.ok();
+    }
 }

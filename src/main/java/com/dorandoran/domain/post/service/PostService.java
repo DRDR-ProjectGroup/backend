@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -562,5 +563,30 @@ public class PostService {
                 .sorted(Comparator.comparingInt(PostMedia::getSortOrder))
                 .map(media -> PostMediaResponse.of(media, mediaUrlResolver.resolve(media)))
                 .toList();
+    }
+
+    @Transactional
+    public void deleteExpiredPost() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+
+        // 삭제된지 threshold(30일) 지난 게시글과 그 게시글의 미디어를 hard delete 처리
+        List<Post> expiredPosts = postRepository.findAllByDeletedAtBefore(threshold);
+
+        expiredPosts.forEach(post -> {
+            List<String> objectKeys = post.getPostMediaList().stream()
+                    .map(PostMedia::getObjectKey)
+                    .filter(objectKey -> objectKey != null && !objectKey.isBlank())
+                    .toList();
+
+            postRepository.delete(post);
+            postMediaRepository.deleteAll(post.getPostMediaList());
+            try {
+                mediaStorage.delete(objectKeys);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // 삭제된지 threshold(30일) 지난 게시글과 연관된 미디어 삭제
     }
 }
