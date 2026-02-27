@@ -224,6 +224,12 @@ public class MemberService {
     @Value("${custom.admin.password}")
     private String adminPassword;
 
+    @Value("${custom.tester.username}")
+    private String testerUsername;
+
+    @Value("${custom.tester.password}")
+    private String testerPassword;
+
     @Transactional
     public void createAdminMember() {
         if (memberRepository.findByUsername(adminUsername).isPresent()) {
@@ -237,6 +243,22 @@ public class MemberService {
 
         Member member = Member.createMember(username, password, email, nickname);
         member.setRoleAdmin();
+
+        memberRepository.save(member);
+    }
+
+    @Transactional
+    public void createTestMember() {
+        if (memberRepository.findByUsername(testerUsername).isPresent()) {
+            return;
+        }
+
+        String username = testerUsername;
+        String password = passwordEncoder.encode(testerPassword);
+        String email = testerUsername + "@naver.com";
+        String nickname = "테스터";
+
+        Member member = Member.createMember(username, password, email, nickname);
 
         memberRepository.save(member);
     }
