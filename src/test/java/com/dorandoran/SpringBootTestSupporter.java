@@ -10,7 +10,6 @@ import com.dorandoran.domain.message.service.MessageService;
 import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
-import com.dorandoran.domain.post.repository.PostRevisionRepository;
 import com.dorandoran.domain.post.service.PostService;
 import com.dorandoran.factory.*;
 import com.dorandoran.global.jwt.JWTUtil;
@@ -93,9 +92,6 @@ public abstract class SpringBootTestSupporter {
 
     @Autowired
     protected PostLikeRepository postLikeRepository;
-
-    @Autowired
-    protected PostRevisionRepository postRevisionRepository;
 
     @Autowired
     protected CommentRepository commentRepository;

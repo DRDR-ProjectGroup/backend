@@ -12,12 +12,10 @@ import com.dorandoran.domain.post.dto.response.*;
 import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.entity.PostMedia;
-import com.dorandoran.domain.post.entity.PostRevision;
 import com.dorandoran.domain.post.generator.MediaUrlResolver;
 import com.dorandoran.domain.post.repository.PostLikeRepository;
 import com.dorandoran.domain.post.repository.PostMediaRepository;
 import com.dorandoran.domain.post.repository.PostRepository;
-import com.dorandoran.domain.post.repository.PostRevisionRepository;
 import com.dorandoran.domain.post.storage.MediaStorage;
 import com.dorandoran.domain.post.storage.StoredMedia;
 import com.dorandoran.domain.post.type.LikeType;
@@ -40,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -49,7 +48,6 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostMediaRepository postMediaRepository;
-    private final PostRevisionRepository postRevisionRepository;
     private final MemberService memberService;
     private final CategoryRepository categoryRepository;
     private final MediaStorage mediaStorage;
@@ -142,8 +140,6 @@ public class PostService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
         }
 
-        savePostRevision(post);
-
         // 게시글 수정 로직 구현
         post.modifyTitleAndContent(dto.getTitle(), dto.getContent());
 
@@ -212,10 +208,6 @@ public class PostService {
         List<PostMediaResponse> mediaResponses = mapMediaResponses(post.getPostMediaList());
 
         return PostResponse.of(post, mediaResponses);
-    }
-
-    private void savePostRevision(Post post) {
-        postRevisionRepository.save(PostRevision.createPostRevision(post));
     }
 
     @Transactional
@@ -571,5 +563,30 @@ public class PostService {
                 .sorted(Comparator.comparingInt(PostMedia::getSortOrder))
                 .map(media -> PostMediaResponse.of(media, mediaUrlResolver.resolve(media)))
                 .toList();
+    }
+
+    @Transactional
+    public void deleteExpiredPost() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+
+        // 삭제된지 threshold(30일) 지난 게시글과 그 게시글의 미디어를 hard delete 처리
+        List<Post> expiredPosts = postRepository.findAllByDeletedAtBefore(threshold);
+
+        expiredPosts.forEach(post -> {
+            List<String> objectKeys = post.getPostMediaList().stream()
+                    .map(PostMedia::getObjectKey)
+                    .filter(objectKey -> objectKey != null && !objectKey.isBlank())
+                    .toList();
+
+            postRepository.delete(post);
+            postMediaRepository.deleteAll(post.getPostMediaList());
+            try {
+                mediaStorage.delete(objectKeys);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // 삭제된지 threshold(30일) 지난 게시글과 연관된 미디어 삭제
     }
 }
