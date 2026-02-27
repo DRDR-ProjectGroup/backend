@@ -16,7 +16,7 @@ public class PostModifyRequest {
     private String title;
     @NotBlank(message = "내용을 입력해주세요.")
     private String content;
-    private Map<Long, Integer> oldMediaIdsAndOrders;
+    private Map<Long, List<Integer>> oldMediaIdsAndOrders;
     private List<Long> deletedMediaIds;
     private List<Integer> newMediaOrders;
 }
