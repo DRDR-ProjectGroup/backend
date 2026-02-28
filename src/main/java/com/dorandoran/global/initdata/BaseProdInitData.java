@@ -26,6 +26,7 @@ public class BaseProdInitData {
     void init() {
         createDefaultCategoryGroup();
         memberService.createAdminMember();
+        memberService.createTestMember();
     }
 
     private List<CategoryGroup> createDefaultCategoryGroup() {

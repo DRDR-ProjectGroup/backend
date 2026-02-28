@@ -75,6 +75,9 @@ custom:
   admin:
     username: ${ADMIN_USERNAME}
     password: ${ADMIN_PASSWORD}
+  tester:
+    username: ${TESTER_USERNAME}
+    password: ${TESTER_PASSWORD}
 
 # Swagger 설정
 springdoc:

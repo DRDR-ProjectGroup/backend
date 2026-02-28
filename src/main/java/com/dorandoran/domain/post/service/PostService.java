@@ -144,16 +144,33 @@ public class PostService {
         post.modifyTitleAndContent(dto.getTitle(), dto.getContent());
 
         // olderMediaIdsAndOrders로 전달받은 id와 order로 기존 미디어의 순서를 업데이트
-        Map<Long, Integer> olderMediaIdsAndOrders = dto.getOldMediaIdsAndOrders();
-        if (olderMediaIdsAndOrders != null) {
-            for (Map.Entry<Long, Integer> entry : olderMediaIdsAndOrders.entrySet()) {
+        Map<Long, List<Integer>> oldMediaIdsAndOrders = dto.getOldMediaIdsAndOrders();
+        if (oldMediaIdsAndOrders != null) {
+            for (Map.Entry<Long, List<Integer>> entry : oldMediaIdsAndOrders.entrySet()) {
                 Long mediaId = entry.getKey();
-                Integer order = entry.getValue();
+                List<Integer> orders = entry.getValue();
 
                 PostMedia postMedia = postMediaRepository.findByIdAndPostId(mediaId, postId)
                         .orElseThrow(() -> new CustomException(ErrorCode.POST_MEDIA_NOT_FOUND));
 
-                postMedia.updateOrder(order);
+                // 동일한 mediaId에 대해 여러 개의 order가 전달된 경우, 첫 번째 order는 기존 media의 순서 업데이트, 나머지는 새로운 media로 간주하여 추가 처리
+                if (orders != null && !orders.isEmpty()) {
+                    postMedia.updateOrder(orders.getFirst());
+                    for (int i = 1; i < orders.size(); i++) {
+                        // 추가 media로 간주하여 처리 (예: 기존 media를 복제하여 새로운 media로 저장)
+                        PostMedia newMedia = PostMedia.createPostMedia(
+                                post,
+                                postMedia.getMediaType(),
+                                postMedia.getOriginalName(),
+                                postMedia.getStoredName(),
+                                postMedia.getObjectKey(),
+                                postMedia.getSize(),
+                                orders.get(i)
+                        );
+                        post.addMedia(newMedia);
+                        postMediaRepository.save(newMedia);
+                    }
+                }
             }
         }
 
@@ -166,9 +183,14 @@ public class PostService {
                 PostMedia postMedia = postMediaRepository.findByIdAndPostId(mediaId, postId)
                         .orElseThrow(() -> new CustomException(ErrorCode.POST_MEDIA_NOT_FOUND));
 
+                String objectKey = postMedia.getObjectKey();
                 // 파일 스토리지에서 삭제
-                if (postMedia.getObjectKey() != null && !postMedia.getObjectKey().isBlank()) {
-                    objectKeys.add(postMedia.getObjectKey());
+                if (objectKey != null && !objectKey.isBlank()) {
+                    List<PostMedia> postMediaList = postMediaRepository.findAllByObjectKeyAndPostId(objectKey, postId);
+
+                    if (postMediaList.size() == 1) {
+                        objectKeys.add(objectKey);
+                    }
                 }
 
                 // DB에서 삭제
@@ -178,7 +200,7 @@ public class PostService {
                 post.getPostMediaList().remove(postMedia);
             }
 
-//            mediaStorage.delete(objectKeys);
+            mediaStorage.delete(objectKeys);
         }
 
         // 이미지 처리 로직 구현 (파일이 주어지면 기존 미디어를 교체)
