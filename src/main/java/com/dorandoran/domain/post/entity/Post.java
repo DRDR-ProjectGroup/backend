@@ -95,8 +95,14 @@ public class Post extends BaseTime {
     }
 
     public void setPopularAt(int threshold) {
-        if (this.getLikeCount() >= threshold && this.getPopularAt() == null) {
-            this.popularAt = LocalDateTime.now();
+        if (this.likeCount >= threshold) {
+            if (this.popularAt == null) {
+                this.popularAt = LocalDateTime.now();
+            }
+        } else {
+            if (this.popularAt != null) {
+                this.popularAt = null;
+            }
         }
     }
 
