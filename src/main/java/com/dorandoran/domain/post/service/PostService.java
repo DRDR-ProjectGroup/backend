@@ -148,7 +148,6 @@ public class PostService {
         if (oldMediaIdsAndOrders != null) {
             for (Map.Entry<Long, List<Integer>> entry : oldMediaIdsAndOrders.entrySet()) {
                 Long mediaId = entry.getKey();
-                log.debug("Updating order for mediaId={}, orders={}", mediaId, entry.getValue());
                 List<Integer> orders = entry.getValue();
 
                 PostMedia postMedia = postMediaRepository.findByIdAndPostId(mediaId, postId)
@@ -184,9 +183,14 @@ public class PostService {
                 PostMedia postMedia = postMediaRepository.findByIdAndPostId(mediaId, postId)
                         .orElseThrow(() -> new CustomException(ErrorCode.POST_MEDIA_NOT_FOUND));
 
+                String objectKey = postMedia.getObjectKey();
                 // 파일 스토리지에서 삭제
-                if (postMedia.getObjectKey() != null && !postMedia.getObjectKey().isBlank()) {
-                    objectKeys.add(postMedia.getObjectKey());
+                if (objectKey != null && !objectKey.isBlank()) {
+                    List<PostMedia> postMediaList = postMediaRepository.findAllByObjectKeyAndPostId(objectKey, postId);
+
+                    if (postMediaList.size() == 1) {
+                        objectKeys.add(objectKey);
+                    }
                 }
 
                 // DB에서 삭제
