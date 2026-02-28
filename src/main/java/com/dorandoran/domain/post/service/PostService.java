@@ -384,10 +384,11 @@ public class PostService {
 
         // 추천 로직 구현
         Optional<PostLike> existPostLike = postLikeRepository.findByMemberAndPost(member, post);
+        PostLike postLike;
 
         if (existPostLike.isEmpty()) {
             // 새로운 추천 생성
-            postLikeRepository.save(PostLike.of(member, post, request.getLikeType()));
+            postLike = postLikeRepository.save(PostLike.of(member, post, request.getLikeType()));
             // likeCount 증가 또는 감소
             post.changeLikeCount(request.getLikeType() == LikeType.LIKE ? +1 : -1);
 
@@ -397,18 +398,19 @@ public class PostService {
             // likeCount 증가 또는 감소
             post.changeLikeCount(request.getLikeType() == LikeType.LIKE ? -1 : +1);
 
+            postLike = null;
+
         } else {
             // 다른 추천 타입이면 변경 처리
             existPostLike.get().changeLikeType(request.getLikeType());
             // likeCount 증가 또는 감소
             post.changeLikeCount(request.getLikeType() == LikeType.LIKE ? +2 : -2);
+
+            postLike = existPostLike.get();
         }
 
         // 추천수가 10이상이 되는 순간 popularAt 설정
         post.setPopularAt(postPopularLikeCount);
-
-        PostLike postLike = postLikeRepository.findByMemberAndPost(member, post)
-                .orElse(null);
 
         return PostLikeResponse.of(post, postLike);
     }
