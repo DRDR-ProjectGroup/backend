@@ -15,4 +15,9 @@ public class PostCleanupScheduler {
     public void cleanUp() {
         postService.deleteExpiredPost();
     }
+
+    @Scheduled(cron = "0 0 5 * * *") // 매일 오전 5시에 실행
+    public void testCleanUp() {
+        postService.deleteCategoryAndGroup();
+    }
 }

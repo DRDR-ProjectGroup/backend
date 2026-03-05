@@ -13,4 +13,6 @@ public interface CategoryGroupRepository extends JpaRepository<CategoryGroup, Lo
     boolean existsByName(String groupName);
 
     List<CategoryGroup> findByDeletedAtIsNull();
+
+    List<CategoryGroup> findByDeletedAtIsNotNull();
 }
