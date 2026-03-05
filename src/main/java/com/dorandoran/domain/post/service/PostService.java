@@ -1,6 +1,8 @@
 package com.dorandoran.domain.post.service;
 
 import com.dorandoran.domain.category.entity.Category;
+import com.dorandoran.domain.category.entity.CategoryGroup;
+import com.dorandoran.domain.category.repository.CategoryGroupRepository;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.service.MemberService;
@@ -50,6 +52,7 @@ public class PostService {
     private final PostMediaRepository postMediaRepository;
     private final MemberService memberService;
     private final CategoryRepository categoryRepository;
+    private final CategoryGroupRepository categoryGroupRepository;
     private final MediaStorage mediaStorage;
     private final RedisRepository redisRepository;
     private final PostLikeRepository postLikeRepository;
@@ -610,7 +613,30 @@ public class PostService {
                 throw new RuntimeException(e);
             }
         });
+    }
 
-        // 삭제된지 threshold(30일) 지난 게시글과 연관된 미디어 삭제
+    @Transactional
+    public void deleteCategoryAndGroup() {
+        // 게시글이 없는 카테고리 삭제
+        List<Category> deletedCategories = categoryRepository.findByDeletedAtIsNotNull();
+        // 카테고리를 참조하는 게시글이 있는지 확인하여, 게시글이 없는 카테고리만 삭제 처리
+        deletedCategories.forEach(category -> {
+            boolean existsPost = postRepository.existsByCategoryId(category.getId());
+
+            if (!existsPost) {
+                categoryRepository.delete(category);
+            }
+        });
+
+        // 카테고리가 없는 카테고리그룹 삭제
+        List<CategoryGroup> deletedCategoryGroups = categoryGroupRepository.findByDeletedAtIsNotNull();
+        // 카테고리그룹을 참조하는 카테고리가 있는지 확인하여, 카테고리가 없는 카테고리그룹만 삭제 처리
+        deletedCategoryGroups.forEach(group -> {
+            boolean existsCategory = categoryRepository.existsByGroupId(group.getId());
+
+            if (!existsCategory) {
+                categoryGroupRepository.delete(group);
+            }
+        });
     }
 }

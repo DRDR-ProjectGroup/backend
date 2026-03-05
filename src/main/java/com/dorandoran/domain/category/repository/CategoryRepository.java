@@ -20,4 +20,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findByDeletedAtIsNull();
 
     List<Category> findByGroupIdAndDeletedAtIsNull(Long groupId);
+
+    List<Category> findByDeletedAtIsNotNull();
+
+    boolean existsByGroupId(Long groupId);
 }
