@@ -1,7 +1,6 @@
 package com.dorandoran.domain.post.service;
 
 import com.dorandoran.domain.category.entity.Category;
-import com.dorandoran.domain.category.entity.CategoryGroup;
 import com.dorandoran.domain.category.repository.CategoryGroupRepository;
 import com.dorandoran.domain.category.repository.CategoryRepository;
 import com.dorandoran.domain.member.entity.Member;
@@ -617,26 +616,10 @@ public class PostService {
 
     @Transactional
     public void deleteCategoryAndGroup() {
-        // 게시글이 없는 카테고리 삭제
-        List<Category> deletedCategories = categoryRepository.findByDeletedAtIsNotNull();
         // 카테고리를 참조하는 게시글이 있는지 확인하여, 게시글이 없는 카테고리만 삭제 처리
-        deletedCategories.forEach(category -> {
-            boolean existsPost = postRepository.existsByCategoryId(category.getId());
+        categoryRepository.deleteOrphanedSoftDeletedCategories();
 
-            if (!existsPost) {
-                categoryRepository.delete(category);
-            }
-        });
-
-        // 카테고리가 없는 카테고리그룹 삭제
-        List<CategoryGroup> deletedCategoryGroups = categoryGroupRepository.findByDeletedAtIsNotNull();
         // 카테고리그룹을 참조하는 카테고리가 있는지 확인하여, 카테고리가 없는 카테고리그룹만 삭제 처리
-        deletedCategoryGroups.forEach(group -> {
-            boolean existsCategory = categoryRepository.existsByGroupId(group.getId());
-
-            if (!existsCategory) {
-                categoryGroupRepository.delete(group);
-            }
-        });
+        categoryGroupRepository.deleteOrphanedSoftDeletedCategoryGroups();
     }
 }
