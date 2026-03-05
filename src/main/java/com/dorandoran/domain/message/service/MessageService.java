@@ -86,5 +86,9 @@ public class MessageService {
         } else {
             throw new CustomException(ErrorCode.NO_ACCESS_TO_MESSAGE);
         }
+
+        if (message.getSenderDeletedAt() != null && message.getReceiverDeletedAt() != null) {
+            messageRepository.delete(message);
+        }
     }
 }
