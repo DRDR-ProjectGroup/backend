@@ -20,6 +20,16 @@ spring:
       include-stacktrace: never
       include-message: never
 
+  websocket:
+    endpoint: /ws
+    allowed-origins:
+      - http://www.drdr.kr
+      - https://www.drdr.kr
+      - http://drdr.kr
+      - https://drdr.kr
+      - http://api.drdr.kr
+      - https://api.drdr.kr
+
 # 프로덕션 환경 로깅 (필수만)
 logging:
   level:

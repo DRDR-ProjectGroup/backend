@@ -71,6 +71,9 @@ dependencies {
     // S3
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0")
 
+    // WebSocket
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis-test")
