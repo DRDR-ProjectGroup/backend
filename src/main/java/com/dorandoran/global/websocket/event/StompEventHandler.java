@@ -35,7 +35,6 @@ public class StompEventHandler {
         int beforeCount = sessionRegistry.getSessionCount(memberId);
 
         sessionRegistry.addSession(memberId, sessionId);
-        log.debug("세션 개수 : {}", sessionRegistry.getSessionCount(memberId));
 
         int afterCount = sessionRegistry.getSessionCount(memberId);
 
@@ -63,7 +62,6 @@ public class StompEventHandler {
             headerAccessor.setLeaveMutable(true);
 
             messagingTemplate.convertAndSend("/sub/chat/users", response, headerAccessor.getMessageHeaders());
-            log.debug("세션 ID: {} 에 현재 사용자 목록을 전송했습니다.", sessionId);
         }
     }
 
