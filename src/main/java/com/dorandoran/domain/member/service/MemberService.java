@@ -35,7 +35,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_CATEGORY;
 import static com.dorandoran.global.jwt.JWTConstant.REFRESH_TOKEN_CATEGORY;
@@ -408,5 +411,11 @@ public class MemberService {
         }
 
         return member;
+    }
+
+    public List<Member> findAllByIds(Set<String> members) {
+        Set<Long> memberIds = members.stream().map(Long::valueOf).collect(Collectors.toSet());
+
+        return memberRepository.findAllById(memberIds);
     }
 }
