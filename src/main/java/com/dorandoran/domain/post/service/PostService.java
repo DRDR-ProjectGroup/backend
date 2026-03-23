@@ -110,6 +110,8 @@ public class PostService {
 
     @Transactional
     public PostResponseWithLikeType getPostById(Long postId, String memberId, String guestToken) {
+        Post post = findPostById(postId);
+
         // 조회수 처리용 식별자 결정
         String viewerIdentifier = (memberId != null) ? memberId : guestToken;
 
@@ -121,8 +123,6 @@ public class PostService {
 
             redisRepository.setViewedPost(postId, viewerIdentifier);
         }
-
-        Post post = findPostById(postId);
 
         List<PostMediaResponse> mediaResponses = mapMediaResponses(post.getPostMediaList());
 

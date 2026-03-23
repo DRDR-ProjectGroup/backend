@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.UUID;
 
 import static com.dorandoran.global.jwt.JWTConstant.*;
 
@@ -85,9 +86,10 @@ public class MemberController {
         // memberService.logout 에서 Redis 에서 refresh token 삭제
         memberService.logout(principal.getName());
 
-        // 클라이언트 쿠키에서 access, refresh token 삭제
+        // 클라이언트 쿠키에서 access, refresh token 삭제, guest token 추가
         deleteAccessTokenCookie(response);
         deleteRefreshTokenCookie(response);
+        addGuestTokenCookie(response);
         return BaseResponse.ok(SuccessCode.LOGOUT_SUCCESS);
     }
 
@@ -172,6 +174,15 @@ public class MemberController {
                 null,
                 0,
                 response);
+    }
+
+    private void addGuestTokenCookie(HttpServletResponse response) {
+        ControllerUt.addCookie(
+                GUEST_TOKEN_HEADER,
+                UUID.randomUUID().toString(),
+                GUEST_TOKEN_EXPIRE_SECONDS,
+                response
+        );
     }
 
     @GetMapping("/me/posts")
