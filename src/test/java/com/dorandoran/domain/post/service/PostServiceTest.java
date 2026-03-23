@@ -308,7 +308,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         assertThatThrownBy(() -> postService.modifyPost(secondMemberId, postId, request, files))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
-                .isEqualTo(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+                .isEqualTo(ErrorCode.FORBIDDEN_POST_MODIFICATION);
     }
 
     @DisplayName("게시글 수정 - 삭제된 게시글이면 수정 안됨")
@@ -399,7 +399,7 @@ class PostServiceTest extends SpringBootTestSupporter {
         assertThatThrownBy(() -> postService.deletePost(postId, secondMemberId))
                 .isInstanceOf(Exception.class)
                 .extracting("code")
-                .isEqualTo(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+                .isEqualTo(ErrorCode.FORBIDDEN_POST_MODIFICATION);
     }
 
     @DisplayName("게시글 삭제 - 삭제된 게시글이면 삭제 안됨")

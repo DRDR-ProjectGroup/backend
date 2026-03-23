@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 
 import static com.dorandoran.global.jwt.JWTConstant.*;
+import static com.dorandoran.global.response.ErrorCode.ALREADY_VALID_TOKEN;
 import static com.dorandoran.global.response.ErrorCode.INVALID_TOKEN;
 import static com.dorandoran.global.response.SuccessCode.TOKEN_REISSUE_SUCCESS;
 
@@ -44,7 +45,7 @@ public class AuthController {
 
     @GetMapping("/me")
     @Operation(summary = "내 정보 조회(개발용)", description = "현재 인증된 사용자의 정보를 조회합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<AuthMemberResponse> getMyInfo(HttpServletRequest request, Principal principal) {
         Long userId = Long.parseLong(principal.getName());
         Member findMember = memberRepository.findById(userId).orElseThrow(
@@ -58,14 +59,20 @@ public class AuthController {
 
     @PostMapping("/reissue")
     @Operation(summary = "토큰 재발급", description = "만료된 AccessToken을 RefreshToken으로 재발급합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
         // AccessToken이 만료되었을 때, RefreshToken으로 AccessToken과 RefreshToken을 재발급 해줍니다.
         // 재발급 범위 : RefreshToken, AccessToken
-        // 1. RefreshToken Cookie에서 추출
+        // 1. AccessToken 만료 여부 확인
+        String accessToken = FilterUtil.extractAccessToken(request);
+
+        if (accessToken != null && !isExpired(accessToken)) {
+            return BaseResponse.fail(ALREADY_VALID_TOKEN);
+        }
+
+        // 1. RefreshToken Cookie에서 추출 & RefreshToken 검증, 만료되었다면 재발급 불가 (로그아웃 처리)
         String refreshToken = FilterUtil.extractRefreshToken(request);
 
-        // 2. RefreshToken 검증, 만료되었다면 재발급 불가 (로그아웃 처리)
         if (refreshToken == null || isExpired(refreshToken)) {
             return BaseResponse.fail(INVALID_TOKEN);
         }
@@ -101,9 +108,10 @@ public class AuthController {
         redisRepository.saveRefreshToken(userId, newRefreshToken, jwtProperties.getRefreshExpiration());
 
         // 8. Response Header와 Cookie에 새로운 토큰들 세팅
-        ControllerUt.addHeaderResponse(
+        ControllerUt.addCookie(
                 ACCESS_TOKEN_HEADER,
-                ControllerUt.makeBearerToken(newAccessToken),
+                newAccessToken,
+                (int) jwtProperties.getAccessExpiration(),
                 response);
 
         ControllerUt.addCookie(
