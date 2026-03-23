@@ -139,7 +139,7 @@ public class PostService {
 
         // 작성자 검증
         if (!post.getMember().getId().equals(member.getId())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+            throw new CustomException(ErrorCode.FORBIDDEN_POST_MODIFICATION);
         }
 
         // 게시글 수정 로직 구현
@@ -244,7 +244,7 @@ public class PostService {
 
         // 작성자 본인 검증 및 관리자 권한 검증
         if (!post.getMember().getId().equals(member.getId()) && !member.isAdmin()) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_POST_MODIFICATION);
+            throw new CustomException(ErrorCode.FORBIDDEN_POST_MODIFICATION);
         }
 
 //        // 게시글 hard delete 방법
