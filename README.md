@@ -2,6 +2,9 @@
 
 배포 주소 : https://drdr.kr
 
+- 테스트 계정 : tester / test!1234
+- 관리자 계정 : admin / drdr!1234
+
 Spring Boot 기반의 커뮤니티 서비스 API 서버입니다.<br>
 누구나 게시글을 읽을 수 있고, 이메일 인증으로 회원가입을 하여<br>
 게시글 작성, 댓글 작성, 좋아요 기능, 쪽지 기능을 사용할 수 있습니다.
@@ -26,6 +29,7 @@ Spring Security와 JWT에 대한 이해, 파일업로드에 대한 기술과 S3 
 - Spring Security
 - JWT
 - Swagger
+- Websocket + STOMP
 
 ### Database
 
@@ -45,13 +49,16 @@ Spring Security와 JWT에 대한 이해, 파일업로드에 대한 기술과 S3 
 
 ```
 src
- ├─ domain          : 하위에 각 도메인 별 폴더
+ ├─ domain          : 도메인별 controller/service/repository/entity/dto
  │   ├─ controller  : api 요청 처리
  │   ├─ service     : 비즈니스 로직 처리
  │   ├─ repository  : 데이터 접근
  │   ├─ entity      : 엔티티 관리
  │   └─ dto         : api 요청/응답 객체
- ├─ global          : 전체 설정
+ │
+ ├─ global          : 공통 설정 (security, redis, exception 등)
+ │   └─ websocket   : 웹소켓 + STOMP 설정
+ │
  └─ standard        : 유틸파일
 ```
 
@@ -77,12 +84,20 @@ src
 
 - 회원간 쪽지 기능
 
+### 좋아요
+
+- 게시글에 좋아요 기능
+
+### 실시간 채팅
+
+- 웹소켓과 STOMP를 활용한 실시간 채팅 기능
+
 ### 관리자
 
 - 카테고리 그룹과 카테고리 관리
 - 회원 관리
-  - 회원 목록 조회
-  - 회원 상태 변경 (차단 기능)
+    - 회원 목록 조회
+    - 회원 상태 변경 (차단 기능)
 
 <br>
 
