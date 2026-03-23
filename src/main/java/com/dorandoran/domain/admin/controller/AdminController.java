@@ -35,7 +35,7 @@ public class AdminController {
 
     @PostMapping("/groups")
     @Operation(summary = "카테고리 그룹 생성", description = "새로운 카테고리 그룹을 생성합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> createCategoryGroup(
             @Valid @RequestBody CategoryGroupRequest request,
             Principal principal
@@ -47,7 +47,7 @@ public class AdminController {
 
     @PutMapping("/groups/{groupId}")
     @Operation(summary = "카테고리 그룹명 수정", description = "기존 카테고리 그룹명을 수정합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> updateCategoryGroup(
             @PathVariable Long groupId,
             @Valid @RequestBody CategoryGroupRequest request,
@@ -60,7 +60,7 @@ public class AdminController {
 
     @DeleteMapping("/groups/{groupId}")
     @Operation(summary = "카테고리 그룹 삭제", description = "기존 카테고리 그룹을 삭제합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> deleteCategoryGroup(
             @PathVariable Long groupId,
             Principal principal
@@ -72,7 +72,7 @@ public class AdminController {
 
     @PostMapping("/categories")
     @Operation(summary = "카테고리 생성", description = "새로운 카테고리를 생성합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> createCategory(
             @Valid @RequestBody CategoryRequest request,
             Principal principal
@@ -84,7 +84,7 @@ public class AdminController {
 
     @PutMapping("/categories/{categoryId}")
     @Operation(summary = "카테고리명 수정", description = "기존 카테고리명을 수정합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> modifyCategory(
             @PathVariable Long categoryId,
             @Valid @RequestBody CategoryRequest request,
@@ -97,7 +97,7 @@ public class AdminController {
 
     @DeleteMapping("/categories/{categoryId}")
     @Operation(summary = "카테고리 삭제", description = "기존 카테고리를 삭제합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> deleteCategory(
             @PathVariable Long categoryId,
             Principal principal
@@ -109,7 +109,7 @@ public class AdminController {
 
     @GetMapping("/members")
     @Operation(summary = "회원 목록 조회", description = "전체 회원 목록을 조회합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PageMemberDto<MemberDetailResponse>> getAllMembers(
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "20") int size,
@@ -121,7 +121,7 @@ public class AdminController {
 
     @PatchMapping("/members/{memberId}")
     @Operation(summary = "회원 상태 변경", description = "특정 회원의 활동을 변경합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> setMemberStatus(
             @PathVariable Long memberId,
             @Valid @RequestBody MemberStatusRequest request,

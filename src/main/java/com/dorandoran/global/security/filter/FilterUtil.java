@@ -11,21 +11,28 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static com.dorandoran.global.jwt.JWTConstant.*;
 
 public abstract class FilterUtil {
     public static String extractAccessToken(HttpServletRequest request) {
-        String accessToken = request.getHeader(ACCESS_TOKEN_HEADER);
-        if (accessToken != null && accessToken.startsWith(ACCESS_TOKEN_PREFIX)) {
-            return accessToken.substring(7);
-        }
-        return null;
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) return null;
+
+        return Arrays.stream(cookies)
+                .filter(cookie -> cookie.getName().equals(ACCESS_TOKEN_HEADER))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     public static String extractRefreshToken(HttpServletRequest request) {
-        return Arrays.stream(request.getCookies())
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) return null;
+
+        return Arrays.stream(cookies)
                 .filter(cookie -> cookie.getName().equals(REFRESH_TOKEN_HEADER))
                 .map(Cookie::getValue)
                 .findFirst()
@@ -33,7 +40,11 @@ public abstract class FilterUtil {
     }
 
     public static String extractGuestToken(HttpServletRequest request) {
-        return Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) return null;
+
+        return Arrays.stream(cookies)
                 .filter(cookie -> cookie.getName().equals(GUEST_TOKEN_HEADER))
                 .map(Cookie::getValue)
                 .findFirst()

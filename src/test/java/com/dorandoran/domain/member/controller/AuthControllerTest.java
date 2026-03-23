@@ -39,7 +39,7 @@ class AuthControllerTest extends SpringBootTestSupporter {
         ResultActions result = mockMvc.perform(
                 get("/api/v1/auth/me")
                         .with(user(String.valueOf(member.getId())).roles("MEMBER"))
-                        .header("Authorization", "Bearer " + accessToken)
+                        .cookie(new Cookie("AccessToken", accessToken))
                         .cookie(new Cookie("RefreshToken", refreshToken))
         );
 
@@ -67,7 +67,7 @@ class AuthControllerTest extends SpringBootTestSupporter {
         ResultActions result = mockMvc.perform(
                 get("/api/v1/auth/me")
                         .with(user(String.valueOf(invalidUserId)).roles("MEMBER"))
-                        .header("Authorization", "Bearer " + accessToken)
+                        .cookie(new Cookie("AccessToken", accessToken))
                         .cookie(new Cookie("RefreshToken", refreshToken))
         );
 
