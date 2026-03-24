@@ -54,4 +54,4 @@ custom:
       - https://api.drdr.kr
 
 cookie:
-  domain: .drdr.kr
+  domain: drdr.kr
