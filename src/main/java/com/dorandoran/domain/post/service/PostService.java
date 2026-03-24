@@ -114,6 +114,7 @@ public class PostService {
 
         // 조회수 처리용 식별자 결정
         String viewerIdentifier = (memberId != null) ? memberId : guestToken;
+        log.info("@@확인용 로그 조회한 사람의 정보 : {}", viewerIdentifier);
 
         // 조회수 증가
         boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
