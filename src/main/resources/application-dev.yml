@@ -56,3 +56,6 @@ custom:
 post:
   popular:
     like-count-threshold: 2
+
+cookie:
+  domain:

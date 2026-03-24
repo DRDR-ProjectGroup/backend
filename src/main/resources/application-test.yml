@@ -75,3 +75,6 @@ redis:
 search:
   elastic:
     enabled: false
+
+cookie:
+  domain:

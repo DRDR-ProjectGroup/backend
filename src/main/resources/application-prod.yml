@@ -52,3 +52,6 @@ custom:
     allowed-origins:
       - https://www.drdr.kr
       - https://api.drdr.kr
+
+cookie:
+  domain: .drdr.kr
