@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Optional;
 
@@ -14,8 +13,7 @@ import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_PREFIX;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ControllerUt {
 
-    @Value("${cookie.domain}")
-    private static String cookieDomain;
+    public static String cookieDomain;
 
     public static void addHeaderResponse(String name, String value, HttpServletResponse response) {
         response.addHeader(name, value);
@@ -47,7 +45,7 @@ public class ControllerUt {
         cookie.setHttpOnly(true); // 자바스크립트에서 쿠키에 접근할 수 없도록 설정 (XSS 방지)
         cookie.setSecure(true); // HTTPS에서만 쿠키를 전송하도록 설정 (CSRF 방지)
         cookie.setAttribute("SameSite", "None"); // SameSite 속성 설정
-        cookie.setDomain(cookieDomain);
+        cookie.setDomain(cookieDomain); // 도메인 설정
         response.addCookie(cookie);
     }
 
