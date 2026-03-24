@@ -113,7 +113,6 @@ public class MemberController {
     public BaseResponse<MemberInfoResponse> getMemberInfo(
             Principal principal
     ) {
-        log.info("@@확인용 로그 회원 정보 조회 : {}", principal.getName());
         MemberInfoResponse memberInfo = memberService.getMemberInfo(principal.getName());
         return BaseResponse.ok(SuccessCode.MEMBER_INFO_SUCCESS, memberInfo);
     }
