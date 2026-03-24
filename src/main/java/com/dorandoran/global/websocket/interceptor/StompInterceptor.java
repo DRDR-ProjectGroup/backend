@@ -31,14 +31,11 @@ public class StompInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            String token = accessor.getFirstNativeHeader("Authorization");
+            String token = (String) accessor.getSessionAttributes().get("AccessToken");
 
             if (token == null || token.isBlank()) {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
             }
-
-            // Bearer 접두어가 붙어있을 수 있으므로 제거
-            token = token.replaceFirst("Bearer\\s+", "").trim();
 
             // 토큰 유효성 검사
             if (!jwtUtil.isValidAccessToken(token)) {
@@ -57,12 +54,10 @@ public class StompInterceptor implements ChannelInterceptor {
             );
 
             accessor.setUser(auth);
-
-            accessor.getSessionAttributes().put("token", token);
             accessor.getSessionAttributes().put("memberId", memberId);
 
         } else if (StompCommand.SEND.equals(accessor.getCommand()) || StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String token = (String) accessor.getSessionAttributes().get("token");
+            String token = (String) accessor.getSessionAttributes().get("AccessToken");
 
             if (token == null || !jwtUtil.isValidAccessToken(token)) {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);

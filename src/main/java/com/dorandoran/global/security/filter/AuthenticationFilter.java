@@ -20,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static com.dorandoran.global.jwt.JWTConstant.*;
+import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_CATEGORY;
 
 @Component
 @RequiredArgsConstructor
@@ -43,14 +43,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 2-2. 만약 response 에 header 값이 있다면 token 이 재발급 된 것.
-        // 해당 token 으로 인증 진행할 것
-        String newAccessToken = response.getHeader(ACCESS_TOKEN_HEADER);
-        if (newAccessToken != null && newAccessToken.startsWith(ACCESS_TOKEN_PREFIX)) {
-            accessToken = newAccessToken.substring(7);
-        }
-
-        // 3. AccessToken 검증2
+        // 3. AccessToken 검증
         try {
             validateAccessToken(accessToken);
         } catch (JwtException e) {

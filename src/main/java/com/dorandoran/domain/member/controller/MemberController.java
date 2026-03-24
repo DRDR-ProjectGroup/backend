@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.UUID;
 
 import static com.dorandoran.global.jwt.JWTConstant.*;
 
@@ -76,7 +77,7 @@ public class MemberController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃")
-    @SecurityRequirement(name = "bearerAuth")   // Swagger 에서 Bearer 인증 필요함을 명시
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> logout(
             HttpServletResponse response,
             Principal principal
@@ -85,27 +86,30 @@ public class MemberController {
         // memberService.logout 에서 Redis 에서 refresh token 삭제
         memberService.logout(principal.getName());
 
-        // 클라이언트 쿠키에서 refresh token 삭제
+        // 클라이언트 쿠키에서 access, refresh token 삭제, guest token 추가
+        deleteAccessTokenCookie(response);
         deleteRefreshTokenCookie(response);
+        addGuestTokenCookie(response);
         return BaseResponse.ok(SuccessCode.LOGOUT_SUCCESS);
     }
 
     @DeleteMapping("/resign")
     @Operation(summary = "회원 탈퇴")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> resign(
             HttpServletResponse response,
             Principal principal
     ) {
         log.info("Resign User: {}", principal.getName());
         memberService.resign(principal.getName());
+        deleteAccessTokenCookie(response);
         deleteRefreshTokenCookie(response);
         return BaseResponse.ok(SuccessCode.RESIGN_SUCCESS);
     }
 
     @GetMapping("/me")
     @Operation(summary = "회원 정보 조회")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<MemberInfoResponse> getMemberInfo(
             Principal principal
     ) {
@@ -115,7 +119,7 @@ public class MemberController {
 
     @PatchMapping("/me/nickname")
     @Operation(summary = "닉네임 수정")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> modifyNickname(
             @Valid @RequestBody NicknameRequest nicknameDto,
             Principal principal
@@ -127,7 +131,7 @@ public class MemberController {
 
     @PatchMapping("/me/password")
     @Operation(summary = "비밀번호 수정")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> modifyPassword(
             @Valid @RequestBody PasswordRequest passwordDto,
             Principal principal
@@ -138,9 +142,10 @@ public class MemberController {
     }
 
     private void addJwtTokenResponse(HttpServletResponse response, MemberTokenResponse token) {
-        ControllerUt.addHeaderResponse(
+        ControllerUt.addCookie(
                 ACCESS_TOKEN_HEADER,
-                ControllerUt.makeBearerToken(token.getAccessToken()),
+                token.getAccessToken(),
+                (int) jwtProperties.getAccessExpiration(),
                 response);
         ControllerUt.addCookie(
                 REFRESH_TOKEN_HEADER,
@@ -155,6 +160,14 @@ public class MemberController {
         );
     }
 
+    private void deleteAccessTokenCookie(HttpServletResponse response) {
+        ControllerUt.addCookie(
+                ACCESS_TOKEN_HEADER,
+                null,
+                0,
+                response);
+    }
+
     private void deleteRefreshTokenCookie(HttpServletResponse response) {
         ControllerUt.addCookie(
                 REFRESH_TOKEN_HEADER,
@@ -163,9 +176,18 @@ public class MemberController {
                 response);
     }
 
+    private void addGuestTokenCookie(HttpServletResponse response) {
+        ControllerUt.addCookie(
+                GUEST_TOKEN_HEADER,
+                UUID.randomUUID().toString(),
+                GUEST_TOKEN_EXPIRE_SECONDS,
+                response
+        );
+    }
+
     @GetMapping("/me/posts")
     @Operation(summary = "내가 작성한 게시글 조회")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PageDto<PostListResponse>> getMyPosts(
             Principal principal,
             @RequestParam(defaultValue = "1") int page,
@@ -177,7 +199,7 @@ public class MemberController {
 
     @GetMapping("/me/comments")
     @Operation(summary = "내가 작성한 댓글 조회")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PageCommentDto<CommentListMemberResponse>> getMyComments(
             Principal principal,
             @RequestParam(defaultValue = "1") int page,

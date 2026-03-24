@@ -26,7 +26,7 @@ public class MessageController {
 
     @PostMapping("/{receiverId}")
     @Operation(summary = "메세지 전송", description = "특정 회원에게 메세지를 전송합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> sendMessage(
             @PathVariable Long receiverId,
             @RequestBody MessageSendRequest request,
@@ -40,7 +40,7 @@ public class MessageController {
 
     @GetMapping("/{messageId}")
     @Operation(summary = "메세지 조회", description = "특정 메세지를 조회합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<MessageResponse> getMessage(
             @PathVariable Long messageId,
             Principal principal
@@ -51,7 +51,7 @@ public class MessageController {
 
     @GetMapping
     @Operation(summary = "메세지 목록 조회", description = "회원이 주고받은 메세지 목록을 조회합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PageMessageDto<MessageResponse>> getMessages(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -64,7 +64,7 @@ public class MessageController {
 
     @DeleteMapping("/{messageId}")
     @Operation(summary = "메세지 삭제", description = "특정 메세지를 삭제합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> deleteMessage(
             @PathVariable Long messageId,
             Principal principal

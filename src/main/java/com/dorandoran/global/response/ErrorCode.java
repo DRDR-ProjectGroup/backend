@@ -28,6 +28,7 @@ public enum ErrorCode {
     // JWT 오류
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    ALREADY_VALID_TOKEN(HttpStatus.BAD_REQUEST, "이미 유효한 토큰입니다."),
 
     // Email 오류
     EMAIL_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),
@@ -45,7 +46,7 @@ public enum ErrorCode {
     MEDIA_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "파일 크기가 허용치를 초과했습니다."),
     MEDIA_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST, "게시글당 업로드 가능한 미디어 개수를 초과했습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
-    UNAUTHORIZED_POST_MODIFICATION(HttpStatus.UNAUTHORIZED, "게시글 수정/삭제 권한이 없습니다."),
+    FORBIDDEN_POST_MODIFICATION(HttpStatus.FORBIDDEN, "게시글 수정/삭제 권한이 없습니다."),
     POST_MEDIA_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 미디어입니다."),
 
     // Comment 오류

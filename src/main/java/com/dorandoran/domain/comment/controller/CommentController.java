@@ -28,7 +28,7 @@ public class CommentController {
 
     @PostMapping
     @Operation(summary = "댓글 생성")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> createComment(
             @PathVariable Long postId,
             @RequestBody CommentRequest request,
@@ -52,7 +52,7 @@ public class CommentController {
 
     @PatchMapping("/{commentId}")
     @Operation(summary = "댓글 수정")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> modifyComment(
             @PathVariable Long postId,
             @PathVariable Long commentId,
@@ -66,7 +66,7 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     @Operation(summary = "댓글 삭제")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> deleteComment(
             @PathVariable Long postId,
             @PathVariable Long commentId,

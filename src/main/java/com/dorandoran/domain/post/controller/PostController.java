@@ -36,7 +36,7 @@ public class PostController {
 
     @PostMapping(path = "/{categoryName}", consumes = {"multipart/form-data"})
     @Operation(summary = "게시글 생성", description = "카테고리 이름에 해당하는 게시글을 생성합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PostResponse> createPost(
             @PathVariable String categoryName,
             @RequestPart("post") PostCreateRequest request,
@@ -61,7 +61,7 @@ public class PostController {
 
     @PutMapping(path = "/{postId}", consumes = {"multipart/form-data"})
     @Operation(summary = "게시글 수정", description = "ID에 해당하는 게시글을 수정합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PostResponse> modifyPost(
             @PathVariable Long postId,
             @RequestPart("post") PostModifyRequest request,
@@ -75,7 +75,7 @@ public class PostController {
 
     @DeleteMapping("/{postId}")
     @Operation(summary = "게시글 삭제", description = "ID에 해당하는 게시글을 삭제합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> deletePost(
             @PathVariable Long postId,
             Principal principal
@@ -101,7 +101,7 @@ public class PostController {
 
     @PostMapping("/{postId}/like")
     @Operation(summary = "게시글 추천, 비추천", description = "ID에 해당하는 게시글을 추천/비추천합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<PostLikeResponse> likePost(
             @PathVariable Long postId,
             @RequestBody PostLikeRequest request,
@@ -114,7 +114,7 @@ public class PostController {
 
     @PostMapping("/{postId}/notice")
     @Operation(summary = "게시글 공지 설정/해제", description = "관리자가 ID에 해당하는 게시글을 공지로 설정하거나 해제합니다.")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> setPostNotice(
             @PathVariable Long postId,
             Principal principal

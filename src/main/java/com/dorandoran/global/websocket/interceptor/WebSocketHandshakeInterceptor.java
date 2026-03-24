@@ -1,9 +1,12 @@
 package com.dorandoran.global.websocket.interceptor;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -17,6 +20,18 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         log.info("WebSocket Handshake 시작: {}", request.getURI());
+        if (request instanceof ServletServerHttpRequest servletRequest) {
+            HttpServletRequest req = servletRequest.getServletRequest();
+
+            if (req.getCookies() != null) {
+                for (Cookie cookie : req.getCookies()) {
+                    if ("AccessToken".equals(cookie.getName())) {
+                        attributes.put("AccessToken", cookie.getValue());
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
