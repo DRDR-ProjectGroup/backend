@@ -55,7 +55,6 @@ public class PostController {
             @CookieValue(name = "GuestToken", required = false) String guestToken
     ) {
         String memberId = principal != null ? principal.getName() : null;
-        log.info("@@확인용 로그 게시글 조회 한 회원 정보 : {}, GuestToken 정보: {}", memberId, guestToken);
         PostResponseWithLikeType postResponseWithLikeType = postService.getPostById(postId, memberId, guestToken);
         return BaseResponse.ok(SuccessCode.POST_DETAIL_SUCCESS, postResponseWithLikeType);
     }
