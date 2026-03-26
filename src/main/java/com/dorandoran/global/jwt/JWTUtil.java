@@ -43,6 +43,13 @@ public class JWTUtil {
                 .getExpiration().before(new Date());
     }
 
+    public long getExpiration(String token) {
+        Date expiration = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+                .getExpiration();
+        long now = System.currentTimeMillis();
+        return (expiration.getTime() - now) / 1000;
+    }
+
     public String createJwt(String category, String userId, String role, long expiredMs) {
         return Jwts.builder()
                 .claim(CLAIM_KEY_USER_CATEGORY, category)
