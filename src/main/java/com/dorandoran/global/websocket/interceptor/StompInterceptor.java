@@ -2,6 +2,7 @@ package com.dorandoran.global.websocket.interceptor;
 
 import com.dorandoran.global.exception.CustomException;
 import com.dorandoran.global.jwt.JWTUtil;
+import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import java.util.Collections;
 public class StompInterceptor implements ChannelInterceptor {
 
     private final JWTUtil jwtUtil;
+    private final RedisRepository redisRepository;
 
     // CONNECT - 연결 될 때 JWT 검증
     @Override
@@ -35,6 +37,10 @@ public class StompInterceptor implements ChannelInterceptor {
 
             if (token == null || token.isBlank()) {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
+            }
+
+            if (redisRepository.isBlacklisted(token)) {
+                throw new CustomException(ErrorCode.BLACKLISTED_TOKEN);
             }
 
             // 토큰 유효성 검사
@@ -61,6 +67,10 @@ public class StompInterceptor implements ChannelInterceptor {
 
             if (token == null || !jwtUtil.isValidAccessToken(token)) {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
+            }
+
+            if (redisRepository.isBlacklisted(token)) {
+                throw new CustomException(ErrorCode.BLACKLISTED_TOKEN);
             }
         }
 
