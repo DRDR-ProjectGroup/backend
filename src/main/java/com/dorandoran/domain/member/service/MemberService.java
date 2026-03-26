@@ -157,8 +157,10 @@ public class MemberService {
     }
 
     @Transactional
-    public void logout(String memberId) {
+    public void logout(String memberId, String accessToken) {
         redisRepository.deleteRefreshToken(memberId);
+        long expiration = jwtUtil.getExpiration(accessToken);
+        redisRepository.addBlacklist(accessToken, expiration);
     }
 
     @Transactional

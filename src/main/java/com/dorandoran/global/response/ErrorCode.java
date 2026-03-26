@@ -29,6 +29,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     ALREADY_VALID_TOKEN(HttpStatus.BAD_REQUEST, "이미 유효한 토큰입니다."),
+    BLACKLISTED_TOKEN(HttpStatus.FORBIDDEN, "블랙리스트에 등록된 토큰입니다. 다시 로그인 해주세요."),
 
     // Email 오류
     EMAIL_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),

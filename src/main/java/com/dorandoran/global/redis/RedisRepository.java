@@ -1,6 +1,7 @@
 package com.dorandoran.global.redis;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -31,8 +32,23 @@ public class RedisRepository {
         delete(key);
     }
 
+    public void addBlacklist(String accessToken, long expiredTime) {
+        String key = blacklistKeyGenerator(accessToken);
+        save(key, "logout", expiredTime, TimeUnit.SECONDS);
+    }
+
+    public boolean isBlacklisted(String accessToken) {
+        String key = blacklistKeyGenerator(accessToken);
+        return redisTemplate.hasKey(key);
+    }
+
     private static String keyGenerator(String userId) {
         return String.format("%s_%s", REFRESH_TOKEN_HEADER, userId);
+    }
+
+    private static String blacklistKeyGenerator(String accessToken) {
+        String hashedToken = DigestUtils.sha256Hex(accessToken);
+        return String.format("%s:%s", "blacklist", hashedToken);
     }
 
     private void save(String key, Object value, long duration, TimeUnit timeUnit) {

@@ -15,6 +15,8 @@ import com.dorandoran.standard.util.ControllerUt;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,12 +81,21 @@ public class MemberController {
     @Operation(summary = "로그아웃")
     @SecurityRequirement(name = "cookieAuth")
     public BaseResponse<Void> logout(
+            HttpServletRequest request,
             HttpServletResponse response,
             Principal principal
     ) {
         log.info("Logout User: {}", principal.getName());
         // memberService.logout 에서 Redis 에서 refresh token 삭제
-        memberService.logout(principal.getName());
+        Cookie cookie = ControllerUt.getCookie(request, ACCESS_TOKEN_HEADER).orElse(null);
+
+        String accessToken = null;
+
+        if (cookie != null) {
+            accessToken = cookie.getValue();
+        }
+
+        memberService.logout(principal.getName(), accessToken);
 
         // 클라이언트 쿠키에서 access, refresh token 삭제, guest token 추가
         deleteAccessTokenCookie(response);
