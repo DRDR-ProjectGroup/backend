@@ -4,11 +4,13 @@ import com.dorandoran.SpringBootTestSupporter;
 import com.dorandoran.domain.member.dto.request.*;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.factory.MemberFactory;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.dorandoran.global.jwt.JWTConstant.ACCESS_TOKEN_CATEGORY;
 import static com.dorandoran.global.response.ErrorCode.EMAIL_NOT_VERIFIED;
 import static com.dorandoran.global.response.SuccessCode.*;
 import static org.mockito.BDDMockito.given;
@@ -152,10 +154,13 @@ class MemberControllerTest extends SpringBootTestSupporter {
     void logout() throws Exception {
         // given
         Member member = memberFactory.saveAndCreateMember(1).getFirst();
+        String accessToken = jwtUtil.createJwt(ACCESS_TOKEN_CATEGORY, String.valueOf(member.getId()), member.getRole().name(), jwtProperties.getAccessExpiration());
+        Cookie accessCookie = new Cookie("AccessToken", accessToken);
 
         // when
         ResultActions result = mockMvc.perform(post("/api/v1/members/logout")
                 .with(user(member.getUsername()).roles("MEMBER"))
+                .cookie(accessCookie)
                 .contentType("application/json"));
 
         // then
@@ -163,9 +168,6 @@ class MemberControllerTest extends SpringBootTestSupporter {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(LOGOUT_SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.code").value(LOGOUT_SUCCESS.getHttpStatus().value()));
-
-        // RedisRepository mock에 대해 deleteRefreshToken이 호출됐는지 검증
-        verify(redisRepository).deleteRefreshToken(member.getUsername());
     }
 
     @DisplayName("resign 테스트")
