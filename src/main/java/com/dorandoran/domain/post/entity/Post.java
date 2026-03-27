@@ -117,4 +117,8 @@ public class Post extends BaseTime {
     public int getCommentCount() {
         return this.comments.size();
     }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
 }

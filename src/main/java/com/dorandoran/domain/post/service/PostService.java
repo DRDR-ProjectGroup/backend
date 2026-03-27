@@ -119,7 +119,7 @@ public class PostService {
         boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
 
         if (!viewed) {
-            postRepository.incrementViewCount(postId);
+            post.incrementViewCount();
 
             redisRepository.setViewedPost(postId, viewerIdentifier);
         }
