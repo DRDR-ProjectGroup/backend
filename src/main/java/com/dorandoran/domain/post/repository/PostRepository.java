@@ -77,4 +77,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     boolean existsByCategoryIdAndDeletedAtIsNull(Long categoryId);
 
     List<Post> findAllByDeletedAtBefore(LocalDateTime threshold);
+
+    List<Post> findByCategoryAndIsNoticeTrueAndDeletedAtIsNull(Category category);
+
+    List<Post> findByIsNoticeTrueAndDeletedAtIsNull();
 }
