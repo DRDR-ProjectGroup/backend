@@ -119,7 +119,7 @@ public class PostService {
         boolean viewed = redisRepository.hasViewedPost(postId, viewerIdentifier);
 
         if (!viewed) {
-            postRepository.incrementViewCount(postId);
+            post.incrementViewCount();
 
             redisRepository.setViewedPost(postId, viewerIdentifier);
         }
@@ -362,12 +362,12 @@ public class PostService {
 
         List<PostListResponse> notices = List.of();
         if (page == 1 && effectiveKeyword == null) {
-            notices = postRepository.findByCategoryAndIsNoticeTrue(category).stream()
+            notices = postRepository.findByCategoryAndIsNoticeTrueAndDeletedAtIsNull(category).stream()
                     .map(PostListResponse::of)
                     .toList();
 
             if (category == null) {
-                notices = postRepository.findByIsNoticeTrue().stream()
+                notices = postRepository.findByIsNoticeTrueAndDeletedAtIsNull().stream()
                         .map(PostListResponse::of)
                         .toList();
             }

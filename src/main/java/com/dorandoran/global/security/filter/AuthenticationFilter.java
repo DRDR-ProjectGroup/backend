@@ -3,6 +3,7 @@ package com.dorandoran.global.security.filter;
 import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.member.type.Role;
 import com.dorandoran.global.jwt.JWTUtil;
+import com.dorandoran.global.redis.RedisRepository;
 import com.dorandoran.global.security.auth.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
@@ -29,6 +30,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final RedisRepository redisRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -40,6 +42,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         // 2. AccessToken 유무 확인
         if (accessToken == null) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 2-1. AccessToken Blacklist 확인
+        if (redisRepository.isBlacklisted(accessToken)) {
+            FilterUtil.handleBlacklistedToken(response, objectMapper, "로그아웃된 토큰입니다.");
             return;
         }
 

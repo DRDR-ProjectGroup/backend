@@ -7,6 +7,7 @@ import com.dorandoran.domain.member.entity.Member;
 import com.dorandoran.domain.post.dto.request.PostCreateRequest;
 import com.dorandoran.domain.post.dto.request.PostLikeRequest;
 import com.dorandoran.domain.post.dto.request.PostModifyRequest;
+import com.dorandoran.domain.post.entity.Post;
 import com.dorandoran.domain.post.entity.PostLike;
 import com.dorandoran.domain.post.type.LikeType;
 import com.dorandoran.global.response.ErrorCode;
@@ -215,16 +216,19 @@ class PostServiceTest extends SpringBootTestSupporter {
     @Test
     void getPost_Success_IncreaseViewCount() throws Exception {
         // given
-        Long postId = postFactory.saveAndCreatePost(member, category, 1).getFirst().getId();
+        Post post = postFactory.saveAndCreatePost(member, category, 1).getFirst();
+        Long postId = post.getId();
         String memberId = member.getId().toString();
 
         // when
         postService.getPostById(postId, memberId, null);
-        postService.getPostById(postId, memberId, null); // 두 번째 조회는 조회수 증가 안됨
+
+        em.flush();
+        em.clear();
 
         // then
-        int viewCount = postRepository.findById(postId).get().getViewCount();
-        assert (viewCount == 1);
+        Post updatePost = postRepository.findById(postId).get();
+        assertThat(updatePost.getViewCount()).isEqualTo(1);
     }
 
     @DisplayName("게시글 작성 - 삭제된 게시글이면 조회 안됨")

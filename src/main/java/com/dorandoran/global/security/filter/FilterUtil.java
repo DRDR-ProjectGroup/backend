@@ -67,4 +67,8 @@ public abstract class FilterUtil {
         response.setCharacterEncoding("utf-8");
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
+
+    public static void handleBlacklistedToken(HttpServletResponse response, ObjectMapper objectMapper, String errorMessage) throws IOException {
+        writeErrorResponse(response, ErrorCode.BLACKLISTED_TOKEN, objectMapper, errorMessage);
+    }
 }
